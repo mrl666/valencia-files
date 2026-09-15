@@ -2,11 +2,498 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Valencia Files — Test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Valencia Files — Valencia in 5 minutes</title>
+<meta name="description" content="A five-minute English briefing for Valencia residents: official council news, public services, transport, weather, sport and useful deadlines.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='10' fill='%23b31217'/><text x='32' y='44' font-family='Georgia,serif' font-size='34' font-weight='700' fill='white' text-anchor='middle'>VF</text></svg>">
+<style>
+  :root{
+    --ink:#111; --muted:#666; --rule:#d8d8d8;
+    --accent:#b31217; --accent-soft:#fff7f7;
+    --bg:#fdfcf9; --card:#fff;
+    --max:780px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:Georgia,"Times New Roman",serif;
+    line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:var(--max);margin:0 auto;padding:20px 18px 60px}
+
+  /* Masthead */
+  header.masthead{
+    border-bottom:3px double var(--ink);
+    padding-bottom:10px; margin-bottom:14px;
+  }
+  .masthead-top{
+    display:flex; align-items:center; justify-content:center;
+    gap:12px; flex-wrap:wrap;
+  }
+  .brand-mark{
+    width:44px; height:44px; flex:0 0 44px;
+    border-radius:10px; background:var(--accent);
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-family:Georgia,serif; font-weight:700;
+    font-size:19px; letter-spacing:.5px;
+  }
+  .brand-text{text-align:left}
+  .brand-text h1{
+    font-size:clamp(24px,6vw,36px);
+    letter-spacing:.4px; margin:0; font-weight:700; line-height:1.05;
+  }
+  .brand-text .tagline{
+    font-size:12px; color:var(--muted); font-style:italic;
+    margin-top:2px; line-height:1.3;
+  }
+  .flags{
+    display:flex; gap:6px; align-items:center; justify-content:center;
+    margin-top:10px;
+  }
+  .flags span{
+    display:inline-block; width:26px; height:18px;
+    border:1px solid var(--rule); border-radius:2px;
+    vertical-align:middle;
+  }
+  /* Flags drawn in CSS to avoid external images */
+  .flag-vc{background:linear-gradient(to bottom,#ffd700 0 33%,#ce1126 33% 66%,#ffd700 66% 100%); position:relative}
+  .flag-vc::after{content:""; position:absolute; left:0; top:0; bottom:0; width:8px; background:#0033a0}
+  .flag-es{background:linear-gradient(to bottom,#aa151b 0 25%,#f1bf00 25% 75%,#aa151b 75% 100%)}
+  .flag-eu{background:#003399; position:relative}
+  .flag-eu::after{
+    content:"★"; position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    color:#ffcc00; font-size:10px; line-height:1;
+  }
+  .meta{
+    display:flex; justify-content:space-between;
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:11px; text-transform:uppercase;
+    letter-spacing:.08em; color:var(--muted);
+    margin-top:10px;
+  }
+
+  /* Top strip: weather + thought */
+  .topstrip{
+    display:grid; grid-template-columns:1.1fr 1fr; gap:10px;
+    margin:16px 0 22px;
+  }
+  .strip-card{
+    background:var(--card); border:1px solid var(--rule);
+    padding:12px 14px;
+  }
+  .strip-card .kicker{
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:10px; font-weight:700; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--accent); margin-bottom:6px;
+  }
+  .weather-now{display:flex; align-items:baseline; gap:8px}
+  .weather-now .temp{font-size:30px; font-weight:700; letter-spacing:-1px; line-height:1}
+  .weather-now .desc{font-size:14px; color:#333}
+  .weather-forecast{
+    display:flex; gap:10px; margin-top:8px;
+    font-family:Helvetica,Arial,sans-serif; font-size:11px;
+    color:var(--muted);
+  }
+  .weather-forecast div{text-align:center; flex:1}
+  .weather-forecast .d{display:block; text-transform:uppercase; letter-spacing:.06em}
+  .weather-forecast .t{color:var(--ink); font-weight:700; font-size:13px; display:block}
+  .thought{font-style:italic; font-size:15px; color:#222; margin:0}
+  .thought .author{
+    display:block; margin-top:6px; font-style:normal;
+    font-family:Helvetica,Arial,sans-serif; font-size:10px;
+    color:var(--muted); text-transform:uppercase; letter-spacing:.08em;
+  }
+
+  /* Brief */
+  .brief{
+    background:var(--card); border:1px solid var(--rule);
+    border-left:4px solid var(--accent);
+    padding:12px 14px; margin:0 0 24px; font-size:15px;
+  }
+  .brief strong{
+    font-family:Helvetica,Arial,sans-serif; font-size:11px;
+    letter-spacing:.1em; text-transform:uppercase;
+    color:var(--accent); display:block; margin-bottom:4px;
+  }
+
+  /* Lead */
+  .lead{margin-bottom:28px;padding-bottom:22px;border-bottom:1px solid var(--rule)}
+  .lead h2{font-size:clamp(22px,5.5vw,30px);line-height:1.2;letter-spacing:-.2px;margin:0 0 8px}
+  .lead p{font-size:16px;color:#333;margin:0 0 8px}
+  .lead .src{font-family:Helvetica,Arial,sans-serif;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+
+  /* Sections */
+  section{margin-bottom:26px}
+  .section-label{
+    font-family:Helvetica,Arial,sans-serif; font-size:11px; font-weight:700;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--ink);
+    border-bottom:1px solid var(--ink); padding-bottom:4px;
+    margin-bottom:12px; display:flex; justify-content:space-between;
+  }
+  .section-label span{color:var(--muted);font-weight:400}
+
+  ul.stories{list-style:none;padding:0;margin:0}
+  ul.stories li{padding:10px 0;border-bottom:1px dotted var(--rule)}
+  ul.stories li:last-child{border-bottom:none}
+  ul.stories h3{font-size:17px;margin:0 0 3px;line-height:1.3}
+  ul.stories p{margin:0;font-size:14px;color:#444}
+  ul.stories .src{
+    font-family:Helvetica,Arial,sans-serif; font-size:10px; color:var(--muted);
+    text-transform:uppercase; letter-spacing:.06em; display:block;
+    margin-top:4px;
+  }
+
+  /* Resident desk */
+  .alert{
+    border-left:4px solid var(--accent); background:var(--accent-soft);
+    padding:11px 13px; margin:0 0 12px;
+    border-top:1px solid var(--rule); border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+  }
+  .alert .kicker{font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent)}
+  .alert strong{font-size:15px}
+  .source-note{font-family:Helvetica,Arial,sans-serif;font-size:10px;color:var(--muted);margin-top:7px}
+  .source-note a{text-decoration:underline}
+  .service-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .service-card{background:var(--card);border:1px solid var(--rule);padding:12px}
+  .service-card .kicker{font-family:Helvetica,Arial,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:var(--accent);margin-bottom:4px}
+  .service-card h3{font-size:16px;line-height:1.25;margin:0 0 4px}
+  .service-card p{font-size:13px;color:#444;margin:0}
+  .service-card a{text-decoration:underline}
+
+  /* Sport */
+  .sport-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .sport-card{background:var(--card);border:1px solid var(--rule);padding:12px}
+  .sport-card .kicker{font-family:Helvetica,Arial,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:var(--accent);margin-bottom:6px}
+  .sport-card h3{font-size:15px;margin:0 0 6px;line-height:1.25}
+  .result{display:flex;justify-content:space-between;align-items:center;font-family:Helvetica,Arial,sans-serif;font-size:12px;padding:4px 0;border-bottom:1px dotted var(--rule)}
+  .result:last-child{border-bottom:none}
+  .result .score{font-weight:700}
+  .sport-more{font-family:Helvetica,Arial,sans-serif;font-size:11px;color:var(--muted);margin-top:10px}
+
+  /* Expat tabs */
+  .tabs{border:1px solid var(--rule);background:var(--card)}
+  .tab-nav{display:flex;flex-wrap:wrap;border-bottom:1px solid var(--rule);background:#faf8f4}
+  .tab-nav button{
+    flex:1 1 auto; min-width:110px;
+    background:none;border:none;border-right:1px solid var(--rule);
+    padding:10px 8px; cursor:pointer;
+    font-family:Helvetica,Arial,sans-serif; font-size:11px;
+    text-transform:uppercase; letter-spacing:.08em; color:var(--muted);
+  }
+  .tab-nav button:last-child{border-right:none}
+  .tab-nav button.active{color:var(--accent);font-weight:700;background:#fff;box-shadow:inset 0 -2px 0 var(--accent)}
+  .tab-panel{display:none;padding:14px 16px}
+  .tab-panel.active{display:block}
+  .tab-panel h4{font-size:15px;margin:0 0 6px}
+  .tab-panel ul{margin:0;padding-left:18px}
+  .tab-panel li{font-size:14px;color:#333;margin-bottom:6px;line-height:1.45}
+  .tab-panel li b{color:var(--ink)}
+
+  /* Footer */
+  footer{
+    margin-top:40px;padding-top:14px;border-top:3px double var(--ink);
+    font-family:Helvetica,Arial,sans-serif; font-size:11px;
+    color:var(--muted); text-align:center; line-height:1.7;
+  }
+  footer a{text-decoration:underline}
+  .legal{max-width:640px;margin:10px auto 0;text-align:left;font-size:10px;line-height:1.55}
+
+  @media (min-width:760px){ :root{--max:820px} .wrap{padding-top:28px} }
+  @media (max-width:640px){ .topstrip{grid-template-columns:1fr} .sport-grid{grid-template-columns:1fr} }
+  @media (max-width:560px){ .service-grid{grid-template-columns:1fr} .tab-nav button{min-width:auto;font-size:10px;padding:8px 6px} }
+</style>
 </head>
-<body style="font-family:Georgia,serif;max-width:640px;margin:40px auto;padding:0 20px;">
-  <h1 style="color:#b31217;">Valencia Files</h1>
-  <p>This is a test edition. If you are reading this in your inbox, the pipeline works.</p>
-  <p style="color:#666;font-size:13px;">Generated automatically every 6 hours.</p>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="masthead-top">
+      <div class="brand-mark" aria-hidden="true">VF</div>
+      <div class="brand-text">
+        <h1>Valencia Files</h1>
+        <div class="tagline">Valencia in 5 minutes — for residents, in English.</div>
+      </div>
+    </div>
+
+    <div class="flags" aria-label="Region, country and union">
+      <span class="flag-vc" title="Comunitat Valenciana"></span>
+      <span class="flag-es" title="Spain"></span>
+      <span class="flag-eu" title="European Union"></span>
+    </div>
+
+    <div class="meta">
+      <span id="date">—</span>
+      <span id="clock">—</span>
+      <span id="edition">Edition —</span>
+    </div>
+  </header>
+
+  <div class="topstrip">
+    <div class="strip-card">
+      <div class="kicker">Valencia now</div>
+      <!-- PLACEHOLDER: replace with AEMET data in Step 7 -->
+      <div class="weather-now">
+        <span class="temp">22°</span>
+        <span class="desc">Partly cloudy · light breeze</span>
+      </div>
+      <div class="weather-forecast">
+        <div><span class="d">Wed</span><span class="t">24°</span></div>
+        <div><span class="d">Thu</span><span class="t">25°</span></div>
+        <div><span class="d">Fri</span><span class="t">23°</span></div>
+        <div><span class="d">Sat</span><span class="t">21°</span></div>
+      </div>
+      <div class="source-note">Source: <a href="https://www.aemet.es/" target="_blank" rel="noopener">AEMET</a> · placeholder</div>
+    </div>
+
+    <div class="strip-card">
+      <div class="kicker">Thought of the day</div>
+      <p class="thought" id="thought">
+        “No wind is favourable for the sailor who does not know which port they are heading to.”
+        <span class="author" id="thought-author">— Seneca</span>
+      </p>
+    </div>
+  </div>
+
+  <div class="brief">
+    <strong>Today in brief</strong>
+    A practical five-minute briefing for English-speaking residents: official Valencia news, services, transport, sport and what affects daily life today.
+  </div>
+
+  <article class="lead">
+    <h2>Valencia and the DGT agree to share traffic-camera data to improve city access</h2>
+    <p>The City of Valencia and Spain's traffic authority, the DGT, have approved a permanent agreement to share traffic-camera data and images around the city. The stated aim is better traffic management and road safety, and a direct connection between the city's traffic centre and the DGT 3.0 platform.</p>
+    <span class="src"><a href="https://www.valencia.es/" target="_blank" rel="noopener">Source: Ajuntament de València · today</a></span>
+  </article>
+
+  <section>
+    <div class="section-label">Valencia <span>local government</span></div>
+    <ul class="stories">
+      <li>
+        <h3>Valencia and the DGT strengthen traffic-data coordination</h3>
+        <p>The city and Spain's traffic authority have agreed to share traffic-camera data and connect Valencia's traffic centre with the DGT 3.0 platform.</p>
+        <span class="src"><a href="https://www.valencia.es/" target="_blank" rel="noopener">Source: Ajuntament de València · today</a></span>
+      </li>
+      <li>
+        <h3>Valencia joins an Ibero-American network linking sport and sustainable development</h3>
+        <p>The city is joining an international municipal network focused on sport as a tool for sustainable urban development and cooperation.</p>
+        <span class="src"><a href="https://www.valencia.es/" target="_blank" rel="noopener">Source: Ajuntament de València · this week</a></span>
+      </li>
+      <li>
+        <h3>More than three tonnes of waste removed from the Devesa-Albufera</h3>
+        <p>The city reports its dedicated cleaning operation has removed more than 3,100 kg of waste from the Devesa-Albufera area.</p>
+        <span class="src"><a href="https://www.valencia.es/" target="_blank" rel="noopener">Source: Ajuntament de València · this week</a></span>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="section-label">Region <span>councils</span></div>
+    <ul class="stories">
+      <li>
+        <h3>Paiporta triples subsidies for school parents' associations</h3>
+        <p>The council has increased funding for AMPAs and INTERAMPA to more than €30,000, citing rising demand.</p>
+        <span class="src"><a href="https://www.paiporta.es/es/noticias" target="_blank" rel="noopener">Source: Ayuntamiento de Paiporta · 14 Sep 2026</a></span>
+      </li>
+      <li>
+        <h3>Alicante: featured municipal news</h3>
+        <p>Placeholder — will pull from alicante.es feed in Step 6.</p>
+        <span class="src"><a href="https://www.alicante.es/" target="_blank" rel="noopener">Source: Ayuntamiento de Alicante</a></span>
+      </li>
+      <li>
+        <h3>Generalitat: latest official announcements</h3>
+        <p>Placeholder — will pull from comunica.gva.es in Step 6.</p>
+        <span class="src"><a href="https://comunica.gva.es/" target="_blank" rel="noopener">Source: Generalitat Valenciana</a></span>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="section-label">Resident desk <span>public services</span></div>
+
+    <div class="alert">
+      <div class="kicker">Emergency</div>
+      <strong>112 — emergency services across the Valencian Community</strong>
+      <div class="source-note">
+        For immediate emergencies always use <b>112</b>.
+        <a href="https://www.112cv.gva.es/" target="_blank" rel="noopener">Official 112 Comunitat Valenciana</a>
+      </div>
+    </div>
+
+    <div class="service-grid">
+      <div class="service-card"><div class="kicker">Transport</div><h3>EMT València</h3><p>Live service status, route changes and disruptions.</p><div class="source-note"><a href="https://www.emtvalencia.es/" target="_blank" rel="noopener">emtvalencia.es</a></div></div>
+      <div class="service-card"><div class="kicker">Metro &amp; tram</div><h3>Metrovalencia</h3><p>Official service notices, planned works and timetable changes.</p><div class="source-note"><a href="https://www.metrovalencia.es/" target="_blank" rel="noopener">metrovalencia.es</a></div></div>
+      <div class="service-card"><div class="kicker">Roads</div><h3>Traffic &amp; road conditions</h3><p>For incidents and official road information, follow the DGT directly.</p><div class="source-note"><a href="https://www.dgt.es/" target="_blank" rel="noopener">dgt.es</a></div></div>
+      <div class="service-card"><div class="kicker">Health</div><h3>Public-health information</h3><p>Official Generalitat notices for alerts, recommendations and service info.</p><div class="source-note"><a href="https://www.san.gva.es/" target="_blank" rel="noopener">san.gva.es</a></div></div>
+      <div class="service-card"><div class="kicker">Weather</div><h3>AEMET alerts</h3><p>Official weather warnings for the Valencian Community.</p><div class="source-note"><a href="https://www.aemet.es/" target="_blank" rel="noopener">aemet.es</a></div></div>
+      <div class="service-card"><div class="kicker">Admin</div><h3>Generalitat services</h3><p>Procedures, deadlines and administrative notices for residents.</p><div class="source-note"><a href="https://www.gva.es/" target="_blank" rel="noopener">gva.es</a></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">Sport <span>Valencia · Alicante · Castellón</span></div>
+    <div class="sport-grid">
+      <div class="sport-card">
+        <div class="kicker">Valencia CF</div>
+        <h3>La Liga</h3>
+        <div class="result"><span>Valencia</span><span class="score">2–1</span></div>
+        <div class="result"><span>Getafe</span><span class="score">1–1</span></div>
+        <div class="result"><span>Villarreal</span><span class="score">0–2</span></div>
+        <div class="source-note"><a href="https://www.valenciacf.com/" target="_blank" rel="noopener">valenciacf.com</a></div>
+      </div>
+      <div class="sport-card">
+        <div class="kicker">Hércules CF</div>
+        <h3>Alicante</h3>
+        <div class="result"><span>Hércules</span><span class="score">1–0</span></div>
+        <div class="result"><span>Alcoyano</span><span class="score">2–2</span></div>
+        <div class="result"><span>Intercity</span><span class="score">3–1</span></div>
+        <div class="source-note"><a href="https://www.herculescf.es/" target="_blank" rel="noopener">herculescf.es</a></div>
+      </div>
+      <div class="sport-card">
+        <div class="kicker">CD Castellón</div>
+        <h3>Castellón</h3>
+        <div class="result"><span>Castellón</span><span class="score">2–0</span></div>
+        <div class="result"><span>Elche</span><span class="score">1–1</span></div>
+        <div class="result"><span>Levante</span><span class="score">0–1</span></div>
+        <div class="source-note"><a href="https://www.cdcastellon.com/" target="_blank" rel="noopener">cdcastellon.com</a></div>
+      </div>
+    </div>
+    <div class="sport-more">Also this week: basketball (Valencia Basket), athletics, sailing and cycling across the Comunitat.</div>
+  </section>
+
+  <section>
+    <div class="section-label">Admin &amp; deadlines <span>useful to residents</span></div>
+    <ul class="stories">
+      <li>
+        <h3>School year 2026–27 began on 9 September</h3>
+        <p>The Generalitat's official calendar sets the 2026–27 school year from 9 September through 18 June.</p>
+        <span class="src"><a href="https://comunica.gva.es/" target="_blank" rel="noopener">Source: Generalitat Valenciana · official calendar</a></span>
+      </li>
+      <li>
+        <h3>Post-DANA reconstruction: council portals publish updates</h3>
+        <p>Several municipalities in l'Horta Sud maintain dedicated reconstruction portals with works, aid and deadlines.</p>
+        <span class="src"><a href="https://www.paiporta.es/es/noticias" target="_blank" rel="noopener">Source: Ayuntamiento de Paiporta · ongoing</a></span>
+      </li>
+    </ul>
+  </section>
+
+  <!-- EXPAT TABBED PANEL -->
+  <section>
+    <div class="section-label">Expat essentials <span>tabbed guide</span></div>
+    <div class="tabs">
+      <div class="tab-nav" role="tablist">
+        <button class="active" data-tab="daily" role="tab">Daily life</button>
+        <button data-tab="culture" role="tab">Culture</button>
+        <button data-tab="family" role="tab">Family</button>
+        <button data-tab="money" role="tab">Money</button>
+        <button data-tab="season" role="tab">Seasonal</button>
+      </div>
+
+      <div class="tab-panel active" data-panel="daily" role="tabpanel">
+        <ul>
+          <li><b>NIE / TIE appointments</b> — slot availability, renewal deadlines, office locations.</li>
+          <li><b>Empadronamiento</b> — registering with the town hall, what it's for, how to renew.</li>
+          <li><b>Healthcare access</b> — SIP card, getting a GP, hospital vs. centro de salud, waiting lists.</li>
+          <li><b>Banking &amp; taxes</b> — opening accounts, modelo 720/100/210, Beckham Law, double taxation.</li>
+          <li><b>Driving</b> — exchanging a UK/EU licence, ITV, fines, ZBE rules.</li>
+          <li><b>Renting &amp; buying</b> — contracts, deposits, utilities, IBI, community fees.</li>
+          <li><b>Schools</b> — public vs. concertado vs. private, enrolment windows, bilingual programmes.</li>
+          <li><b>Pets</b> — import rules, vet registration, travel with pets.</li>
+          <li><b>Post &amp; couriers</b> — Correos, customs on parcels from outside the EU.</li>
+        </ul>
+      </div>
+
+      <div class="tab-panel" data-panel="culture" role="tabpanel">
+        <ul>
+          <li><b>Valencian vs. Spanish</b> — where each is spoken, whether to learn Valencian.</li>
+          <li><b>Fallas</b> — what it is, dates, safety, noise, where to watch.</li>
+          <li><b>Local holidays</b> — puentes, regional vs. national, what's closed.</li>
+          <li><b>Food &amp; markets</b> — Mercat Central, horchata, paella rules, tipping norms.</li>
+          <li><b>Neighbourhood guides</b> — Ruzafa, El Carmen, Cabanyal, Benimaclet, Extramurs.</li>
+        </ul>
+      </div>
+
+      <div class="tab-panel" data-panel="family" role="tabpanel">
+        <ul>
+          <li><b>Expat groups &amp; meetups</b> — language exchanges, parent groups, sports clubs.</li>
+          <li><b>Kids' activities</b> — after-school, summer camps, English-speaking playgroups.</li>
+          <li><b>Healthcare for families</b> — paediatricians, vaccinations, maternity.</li>
+          <li><b>Jobs &amp; remote work</b> — autónomo registration, coworking, digital nomad visa.</li>
+        </ul>
+      </div>
+
+      <div class="tab-panel" data-panel="money" role="tabpanel">
+        <ul>
+          <li><b>Cost of living</b> — rent, utilities, groceries, transport passes.</li>
+          <li><b>Public transport</b> — EMT, Metrovalencia, bike-sharing, regional trains.</li>
+          <li><b>Travel from Valencia</b> — airport, AVE to Madrid, ferries to Balearics.</li>
+          <li><b>Weather &amp; climate</b> — when it rains, DANA risks, summer heat.</li>
+        </ul>
+      </div>
+
+      <div class="tab-panel" data-panel="season" role="tabpanel">
+        <ul>
+          <li><b>DANA and flood preparedness</b> — post-2024, a major concern in l'Horta Sud.</li>
+          <li><b>Summer closures</b> — August shutdowns, when shops and clinics close.</li>
+          <li><b>Christmas &amp; Three Kings</b> — dates, traditions, what's open.</li>
+          <li><b>Beach &amp; fire season</b> — flag warnings, wildfire alerts.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div>
+      Valencia Files — daily briefing · built from official and primary sources ·
+      <a href="#">Subscribe</a> · <a href="#">About</a> · <a href="#">Contact</a>
+    </div>
+    <div>© <span id="year"></span> Valencia Files.</div>
+    <div class="legal">
+      <b>Reuse and attribution.</b> Summaries of public-sector information are produced under Law 37/2007 on the reuse of public sector information and its implementing rules. Each item cites the source and, where available, its date. This site is independent and is not endorsed by, or affiliated with, any council, the Generalitat Valenciana, EMT, Metrovalencia, DGT, 112 or AEMET.
+      <br><br>
+      <b>No professional advice.</b> Content is informational only and is not a substitute for official notices or emergency services.
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  (function(){
+    var now = new Date();
+    var opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+    document.getElementById('date').textContent = now.toLocaleDateString('en-GB', opts);
+    document.getElementById('clock').textContent = now.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+    var h = now.getHours();
+    var edition = h < 8 ? 'Morning' : h < 14 ? 'Midday' : h < 20 ? 'Evening' : 'Night';
+    document.getElementById('edition').textContent = edition + ' edition';
+    document.getElementById('year').textContent = now.getFullYear();
+
+    // Rotating thought of the day
+    var thoughts = [
+      {t:"No wind is favourable for the sailor who does not know which port they are heading to.", a:"Seneca"},
+      {t:"We suffer more often in imagination than in reality.", a:"Seneca"},
+      {t:"The best way out is always through.", a:"Robert Frost"},
+      {t:"Little by little, one travels far.", a:"J.R.R. Tolkien"},
+      {t:"What you do every day matters more than what you do once in a while.", a:"Gretchen Rubin"}
+    ];
+    var pick = thoughts[Math.floor(Date.now() / 3600000) % thoughts.length];
+    document.getElementById('thought').innerHTML = '“' + pick.t + '”<span class="author" id="thought-author">— ' + pick.a + '</span>';
+
+    // Tabs
+    document.querySelectorAll('.tab-nav button').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var id = btn.getAttribute('data-tab');
+        document.querySelectorAll('.tab-nav button').forEach(function(b){ b.classList.remove('active'); });
+        document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+        btn.classList.add('active');
+        document.querySelector('.tab-panel[data-panel="' + id + '"]').classList.add('active');
+      });
+    });
+  })();
+</script>
+
 </body>
 </html>
