@@ -15,6 +15,15 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '20'
+      - name: Fetch weather
+        env:
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+        run: node weather.js > weather.json
+
+      - name: Update index.html
+        env:
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+        run: node update.js
       - name: Update index.html
         run: node update.js
       - name: Commit updated page
