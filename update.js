@@ -3,11 +3,11 @@ const fs = require('fs');
 const file = 'index.html';
 let html = fs.readFileSync(file, 'utf8');
 
-// Load weather if available (produced by weather.js > weather.json)
+// --- Load weather if available (produced by: node weather.js > weather.json) ---
 let weather = null;
 try {
   weather = JSON.parse(fs.readFileSync('weather.json', 'utf8'));
-  if (!weather || !weather.current) weather = null; // empty {} fallback
+  if (!weather || !weather.current || !weather.forecast) weather = null;
 } catch (e) {
   // no weather file — keep placeholder
 }
@@ -22,7 +22,7 @@ const thoughts = [
 ];
 const pick = thoughts[Math.floor(Date.now() / 3600000) % thoughts.length];
 
-// --- Rotating headline pool (placeholder until real feeds) ---
+// --- Rotating headline pool (placeholder until real feeds land) ---
 const headlines = [
   { h: "Valencia and the DGT agree to share traffic-camera data", s: "Two-sentence summary goes here in the next step." },
   { h: "Paiporta triples subsidies for school parents' associations", s: "The council has increased funding to more than €30,000." },
@@ -51,15 +51,23 @@ html = html.replace(
 
 // --- Inject weather (only if real data present) ---
 if (weather) {
+  const forecastHtml = weather.forecast.map(f =>
+    `<div><span class="d">${f.day}</span><span class="t">${f.high}°</span></div>`
+  ).join('');
+
   html = html.replace(
-    /<div class="weather-now">[\s\S]*?<\/div>\s*<div class="weather-forecast">[\s\S]*?<\/div>/,
-    `<div class="weather-now">
-      <span class="temp">${weather.current.temp}°</span>
-      <span class="desc">${weather.current.desc}</span>
-    </div>
-    <div class="weather-forecast">
-      ${weather.forecast.map(f => `<div><span class="d">${f.day}</span><span class="t">${f.high}°</span></div>`).join('')}
-    </div>`
+    /<div class="strip-card">\s*<div class="kicker">Valencia now<\/div>[\s\S]*?<!--\s*END-WEATHER\s*-->/,
+    `<div class="strip-card">
+      <div class="kicker">Valencia now</div>
+      <div class="weather-now">
+        <span class="temp">${weather.current.temp}°</span>
+        <span class="desc">${weather.current.desc}</span>
+      </div>
+      <div class="weather-forecast">
+        ${forecastHtml}
+      </div>
+      <div class="source-note">Source: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a></div>
+    </div><!-- END-WEATHER -->`
   );
 }
 
