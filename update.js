@@ -3,6 +3,19 @@ const fs = require('fs');
 const file = 'index.html';
 let html = fs.readFileSync(file, 'utf8');
 
+if (weather) {
+  html = html.replace(
+    /<div class="weather-now">[\s\S]*?<\/div>\s*<div class="weather-forecast">[\s\S]*?<\/div>/,
+    `<div class="weather-now">
+      <span class="temp">${weather.current.temp}°</span>
+      <span class="desc">${weather.current.desc}</span>
+    </div>
+    <div class="weather-forecast">
+      ${weather.forecast.map(f => `<div><span class="d">${f.day}</span><span class="t">${f.high}°</span></div>`).join('')}
+    </div>`
+  );
+}
+
 // --- 1. Rotating thought pool ---
 const thoughts = [
   { t: "No wind is favourable for the sailor who does not know which port they are heading to.", a: "Seneca" },
