@@ -2,11 +2,22 @@ const API_KEY = process.env.AEMET_API_KEY;
 const MUNICIPIO = '46250'; // València
 
 async function fetchAemet(url) {
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    headers: {
+      'User-Agent': 'ValenciaFiles/1.0 (github.com/mrl666/valencia-files)',
+      'Accept': 'application/json'
+    }
+  });
+  if (res.status === 429) throw new Error('AEMET rate limit (429). Wait and retry.');
   if (!res.ok) throw new Error(`AEMET HTTP ${res.status}`);
   const envelope = await res.json();
   if (!envelope.datos) throw new Error('No datos URL in envelope');
-  const dataRes = await fetch(envelope.datos);
+  const dataRes = await fetch(envelope.datos, {
+    headers: {
+      'User-Agent': 'ValenciaFiles/1.0 (github.com/mrl666/valencia-files)',
+      'Accept': 'application/json'
+    }
+  });
   return dataRes.json();
 }
 
