@@ -21,6 +21,11 @@ async function fetchAemet(url) {
   return dataRes.json();
 }
 
+const wait = (ms) => new Promise(r => setTimeout(r, ms));
+
+// after the first fetch, before the second:
+await wait(1500);
+
 async function getWeather() {
   const url = `https://opendata.aemet.es/opendata/api/prediccion/especifica/municipio/diaria/${MUNICIPIO}?api_key=${API_KEY}`;
   const data = await fetchAemet(url);
