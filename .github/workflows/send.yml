@@ -15,17 +15,15 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '20'
+
       - name: Fetch weather
         env:
           AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
         run: node weather.js > weather.json
 
       - name: Update index.html
-        env:
-          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
         run: node update.js
-      - name: Update index.html
-        run: node update.js
+
       - name: Commit updated page
         run: |
           git config user.name "valencia-files-bot"
@@ -33,6 +31,7 @@ jobs:
           git add index.html
           git commit -m "Edition update $(date -u +'%Y-%m-%dT%H:%M')" || echo "No changes"
           git push
+
       - name: Send email
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
