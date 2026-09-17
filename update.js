@@ -12,6 +12,15 @@ try {
   // no weather file — keep placeholder
 }
 
+// --- Load Valencia news if available ---
+let valenciaNews = null;
+try {
+  valenciaNews = JSON.parse(fs.readFileSync('valencia.json', 'utf8'));
+  if (!valenciaNews || !valenciaNews.length) valenciaNews = null;
+} catch (e) {
+  // no valencia news file — keep placeholder
+}
+
 // --- Rotating thought pool ---
 const thoughts = [
   { t: "No wind is favourable for the sailor who does not know which port they are heading to.", a: "Seneca" },
