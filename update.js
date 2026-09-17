@@ -58,6 +58,22 @@ html = html.replace(
   </article>`
 );
 
+// --- Inject Valencia news (replaces the first three placeholder stories) ---
+if (valenciaNews) {
+  const newsHtml = valenciaNews.map(item =>
+    `<li>
+      <h3><a href="${item.url}" target="_blank" rel="noopener">${item.title}</a></h3>
+      <span class="src">Source: Ajuntament de València · ${item.date}</span>
+    </li>`
+  ).join('');
+
+  // Replace the first <ul class="stories"> that follows "Valencia <span>local government</span>"
+  html = html.replace(
+    /(<div class="section-label">Valencia <span>local government<\/span><\/div>\s*<ul class="stories">)[\s\S]*?(<\/ul>)/,
+    `$1${newsHtml}$2`
+  );
+}
+
 // --- Inject weather (only if real data present) ---
 if (weather) {
   const forecastHtml = weather.forecast.map(f =>
