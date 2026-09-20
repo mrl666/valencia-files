@@ -457,7 +457,6 @@
     var now = new Date();
     var opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
     document.getElementById('date').textContent = now.toLocaleDateString('en-GB', opts);
-    document.getElementById('clock').textContent = now.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
     var h = now.getHours();
     var edition = h < 8 ? 'Morning' : h < 14 ? 'Midday' : h < 20 ? 'Evening' : 'Night';
     document.getElementById('edition').textContent = edition + ' edition';
