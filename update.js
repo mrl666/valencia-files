@@ -3,87 +3,70 @@ const fs = require('fs');
 const file = 'index.html';
 let html = fs.readFileSync(file, 'utf8');
 
-// --- Load weather if available ---
+// --- Load weather ---
 let weather = null;
 try {
   weather = JSON.parse(fs.readFileSync('weather.json', 'utf8'));
   if (!Array.isArray(weather) || weather.length !== 3) weather = null;
-} catch (e) {
-  weather = null;
-}
+} catch (e) { weather = null; }
 
-// --- Load Valencia news if available ---
-let valenciaNews = null;
+// --- Load Valencia pool ---
+let valenciaPool = [];
 try {
-  valenciaNews = JSON.parse(fs.readFileSync('valencia.json', 'utf8'));
-  if (!Array.isArray(valenciaNews) || !valenciaNews.length) valenciaNews = null;
-} catch (e) {
-  valenciaNews = null;
-}
+  valenciaPool = JSON.parse(fs.readFileSync('valencia.json', 'utf8'));
+  if (!Array.isArray(valenciaPool)) valenciaPool = [];
+} catch (e) { valenciaPool = []; }
 
-// --- Pick thought of the day (rotation) ---
+// --- Load Alicante pool ---
+let alicantePool = [];
+try {
+  alicantePool = JSON.parse(fs.readFileSync('alicante.json', 'utf8'));
+  if (!Array.isArray(alicantePool)) alicantePool = [];
+} catch (e) { alicantePool = []; }
+
+// --- Load Castellón pool ---
+let castellonPool = [];
+try {
+  castellonPool = JSON.parse(fs.readFileSync('castellon.json', 'utf8'));
+  if (!Array.isArray(castellonPool)) castellonPool = [];
+} catch (e) { castellonPool = []; }
+
+// --- Load used-news tracking ---
+let usedNews = [];
+try {
+  usedNews = JSON.parse(fs.readFileSync('used-news.json', 'utf8'));
+  if (!Array.isArray(usedNews)) usedNews = [];
+} catch (e) { usedNews = []; }
+
+// --- Load quotes + used quotes ---
 let thought = null;
 try {
   const quotes = JSON.parse(fs.readFileSync('quotes.json', 'utf8'));
   const used = JSON.parse(fs.readFileSync('used.json', 'utf8'));
-
   const now = Date.now();
-  const COOLDOWN_DAYS = 60;
-  const cooldownMs = COOLDOWN_DAYS * 24 * 3600 * 1000;
-
+  const cooldownMs = 60 * 24 * 3600 * 1000;
   const lastUsed = new Map();
-  used.forEach(entry => {
-    if (entry && entry.id) lastUsed.set(entry.id, entry.at || 0);
-  });
-
-  const fresh = quotes.filter(q => {
-    const at = lastUsed.get(q.id) || 0;
-    return (now - at) > cooldownMs;
-  });
-
-  const pool = fresh.length ? fresh : quotes.slice().sort((a, b) => {
-    return (lastUsed.get(a.id) || 0) - (lastUsed.get(b.id) || 0);
-  });
-
+  used.forEach(e => { if (e && e.id) lastUsed.set(e.id, e.at || 0); });
+  const fresh = quotes.filter(q => (now - (lastUsed.get(q.id) || 0)) > cooldownMs);
+  const pool = fresh.length ? fresh : quotes.slice().sort((a, b) =>
+    (lastUsed.get(a.id) || 0) - (lastUsed.get(b.id) || 0));
   const slot = Math.floor(now / 3600000) % pool.length;
   thought = pool[slot];
+  const updated = used.filter(e => e.id !== thought.id);
+  updated.push({ id: thought.id, at: now });
+  fs.writeFileSync('used.json', JSON.stringify(updated, null, 2));
+} catch (e) { console.error('Quote picker error:', e.message); }
 
-  const updatedUsed = used.filter(e => e.id !== thought.id);
-  updatedUsed.push({ id: thought.id, at: now });
-  fs.writeFileSync('used.json', JSON.stringify(updatedUsed, null, 2));
-} catch (e) {
-  console.error('Quote picker error:', e.message);
-}
-
-// --- Rotating lead pool (placeholder until real feeds land) ---
-const headlines = [
-  { h: "Valencia and the DGT agree to share traffic-camera data", s: "Two-sentence summary goes here in the next step." },
-  { h: "Paiporta triples subsidies for school parents' associations", s: "The council has increased funding to more than €30,000." },
-  { h: "More than three tonnes of waste removed from the Devesa-Albufera", s: "The city reports 3,100 kg of waste removed in the latest operation." },
-  { h: "Valencia joins an Ibero-American network on sport and development", s: "The city joins an international municipal network on sustainable urban development." }
-];
-const lead = headlines[Math.floor(Date.now() / 21600000) % headlines.length];
-
-const stamp = new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
-
-// --- Helper: replace inner HTML of the first element with a given id ---
+// --- Helpers ---
 function replaceById(html, id, newInner) {
-  // Matches an opening tag containing id="<id>" and captures the tag name,
-  // then finds the matching closing tag for that tag name.
   const openRe = new RegExp(`<([a-zA-Z][a-zA-Z0-9]*)\\b[^>]*\\bid="${id}"[^>]*>`);
   const m = html.match(openRe);
   if (!m) return html;
-
   const tag = m[1];
-  const openIdx = m.index;
-  const openEnd = openIdx + m[0].length;
-
-  // Walk forward to find the matching closing tag, respecting nesting of the same tag.
+  const openEnd = m.index + m[0].length;
   let depth = 1;
-  let i = openEnd;
   const tagRe = new RegExp(`<\\/?${tag}\\b[^>]*>`, 'g');
   tagRe.lastIndex = openEnd;
-
   let mm;
   while ((mm = tagRe.exec(html)) !== null) {
     if (mm[0].startsWith('</')) {
@@ -91,77 +74,111 @@ function replaceById(html, id, newInner) {
       if (depth === 0) {
         return html.slice(0, openEnd) + newInner + html.slice(mm.index);
       }
-    } else if (!mm[0].endsWith('/>')) {
-      depth++;
-    }
-    i = mm.index + mm[0].length;
+    } else if (!mm[0].endsWith('/>')) depth++;
   }
-  return html; // no matching close found
+  return html;
+}
+
+function shuffle(arr, seed) {
+  const a = arr.slice();
+  let s = seed;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = (s * 9301 + 49297) % 233280;
+    const j = Math.floor((s / 233280) * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+const stamp = new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
+const seed = Math.floor(Date.now() / 3600000); // changes each hour
+
+// --- Pick Valencia lead + 3 secondary (shuffled, avoiding last lead) ---
+if (valenciaPool.length >= 4) {
+  const lastLeadId = usedNews[0]?.id || null;
+  let shuffled = shuffle(valenciaPool, seed);
+  if (lastLeadId && shuffled[0].id === lastLeadId && shuffled.length > 1) {
+    [shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]];
+  }
+  const lead = shuffled[0];
+  const secondary = shuffled.slice(1, 4);
+
+  html = replaceById(html, 'lead-story',
+    `<h2>${esc(lead.title)}</h2>
+     <span class="src"><a href="${esc(lead.url)}" target="_blank" rel="noopener">Source: Ajuntament de València · ${esc(lead.date || stamp)}</a></span>`
+  );
+
+  const secHtml = secondary.map(item =>
+    `<li>
+      <h3><a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.title)}</a></h3>
+      <span class="src">Source: Ajuntament de València · ${esc(item.date || '')}</span>
+    </li>`
+  ).join('');
+  html = replaceById(html, 'valencia-stories', secHtml);
+
+  // Record used lead
+  usedNews = [{ id: lead.id, at: Date.now() }];
+  fs.writeFileSync('used-news.json', JSON.stringify(usedNews, null, 2));
+}
+
+// --- Alicante section ---
+if (alicantePool.length >= 1) {
+  const picks = shuffle(alicantePool, seed + 7).slice(0, 3);
+  const htmlList = picks.map(item =>
+    `<li>
+      <h3><a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.title)}</a></h3>
+      <span class="src">Source: Ayuntamiento de Alicante · ${esc(item.date || '')}</span>
+    </li>`
+  ).join('');
+  html = replaceById(html, 'alicante-stories', htmlList);
+}
+
+// --- Castellón section ---
+if (castellonPool.length >= 1) {
+  const picks = shuffle(castellonPool, seed + 13).slice(0, 3);
+  const htmlList = picks.map(item =>
+    `<li>
+      <h3><a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.title)}</a></h3>
+      <span class="src">Source: Ajuntament de Castelló · ${esc(item.date || '')}</span>
+    </li>`
+  ).join('');
+  html = replaceById(html, 'castellon-stories', htmlList);
 }
 
 // --- Inject thought ---
 if (thought) {
-  html = replaceById(
-    html,
-    'thought-block',
+  html = replaceById(html, 'thought-block',
     `<div class="kicker">Thought of the day</div>
-     <p class="thought" id="thought">“${thought.text}”<span class="author" id="thought-author">— ${thought.author}</span></p>`
+     <p class="thought" id="thought">“${esc(thought.text)}”<span class="author" id="thought-author">— ${esc(thought.author)}</span></p>`
   );
 }
 
-// --- Inject lead ---
-html = replaceById(
-  html,
-  'lead-story',
-  `<h2>${lead.h}</h2>
-    <p>${lead.s}</p>
-    <span class="src"><a href="https://www.valencia.es/" target="_blank" rel="noopener">Source: Ajuntament de València · ${stamp}</a></span>`
-);
-
-// --- Inject Valencia news ---
-if (valenciaNews) {
-  const newsHtml = valenciaNews.map(item =>
-    `<li>
-      <h3><a href="${item.url}" target="_blank" rel="noopener">${item.title}</a></h3>
-      <span class="src">Source: Ajuntament de València · ${item.date}</span>
-    </li>`
-  ).join('');
-
-  html = replaceById(html, 'valencia-stories', newsHtml);
-}
-
-// --- Inject weather (three cities) ---
+// --- Inject weather ---
 if (weather) {
   const buildCity = (city) => {
     const forecastHtml = city.forecast.map(f =>
-      `<div><span class="d">${f.day}</span><span class="t">${f.high}°</span></div>`
+      `<div><span class="d">${esc(f.day)}</span><span class="t">${f.high}°</span></div>`
     ).join('');
     return `<div class="weather-city">
-      <div class="city-name">${city.name}</div>
-      <div class="weather-now">
-        <span class="temp">${city.current.temp}°</span>
-        <span class="desc">${city.current.desc}</span>
-      </div>
+      <div class="city-name">${esc(city.name)}</div>
+      <div class="weather-now"><span class="temp">${city.current.temp}°</span><span class="desc">${esc(city.current.desc)}</span></div>
       <div class="weather-forecast">${forecastHtml}</div>
     </div>`;
   };
-
-  html = replaceById(
-    html,
-    'weather-card',
+  html = replaceById(html, 'weather-card',
     `<div class="kicker">Weather · València · Alacant · Castelló</div>
-      <div class="weather-cities">
-        ${weather.map(buildCity).join('')}
-      </div>
-      <div class="source-note">Source: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a></div>`
+     <div class="weather-cities">${weather.map(buildCity).join('')}</div>
+     <div class="source-note">Source: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a></div>`
   );
 }
 
-// --- Inject edition stamp ---
-html = html.replace(
-  /<span id="edition">[^<]*<\/span>/,
-  `<span id="edition">Updated ${stamp}</span>`
-);
+// --- Edition stamp ---
+html = html.replace(/<span id="edition">[^<]*<\/span>/,
+  `<span id="edition">Updated ${stamp}</span>`);
 
 fs.writeFileSync(file, html);
 console.log('Updated index.html at', stamp);
