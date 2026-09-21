@@ -10,7 +10,6 @@ try {
   if (!Array.isArray(weather) || weather.length !== 3) weather = null;
 } catch (e) {
   weather = null;
-  console.log(1);
 }
 
 // --- Load Valencia news if available ---
@@ -76,7 +75,6 @@ if (valenciaNews) {
 }
 
 if (Array.isArray(weather) && weather.length === 3) {
-  debugger;
   const buildCity = (city) => {
     const forecastHtml = city.forecast.map(f =>
       `<div><span class="d">${f.day}</span><span class="t">${f.high}°</span></div>`
