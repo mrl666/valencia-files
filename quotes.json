@@ -1,0 +1,482 @@
+[
+  {
+    "id": "seneca-001",
+    "text": "No wind is favourable for the sailor who does not know which port they are heading to.",
+    "author": "Seneca",
+    "source": "Letters to Lucilius",
+    "license": "public-domain",
+    "origin": "la"
+  },
+  {
+    "id": "seneca-002",
+    "text": "We suffer more often in imagination than in reality.",
+    "author": "Seneca",
+    "source": "Letters to Lucilius",
+    "license": "public-domain",
+    "origin": "la"
+  },
+  {
+    "id": "seneca-003",
+    "text": "While we wait for life, life passes.",
+    "author": "Seneca",
+    "source": "Letters to Lucilius",
+    "license": "public-domain",
+    "origin": "la"
+  },
+  {
+    "id": "seneca-004",
+    "text": "It is not that we have a short time to live, but that we waste much of it.",
+    "author": "Seneca",
+    "source": "On the Shortness of Life",
+    "license": "public-domain",
+    "origin": "la"
+  },
+  {
+    "id": "seneca-005",
+    "text": "Luck is what happens when preparation meets opportunity.",
+    "author": "Seneca",
+    "source": "attributed",
+    "license": "public-domain",
+    "origin": "la"
+  },
+  {
+    "id": "machado-001",
+    "text": "Traveller, there is no path — the path is made by walking.",
+    "author": "Antonio Machado",
+    "source": "Proverbios y cantares",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "machado-002",
+    "text": "The eyes are not proud of what they see.",
+    "author": "Antonio Machado",
+    "source": "Proverbios y cantares",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "machado-003",
+    "text": "Everything passes and everything stays, but our fate is to pass.",
+    "author": "Antonio Machado",
+    "source": "Proverbios y cantares",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "machado-004",
+    "text": "Beneath the sun, the best is to be a good person.",
+    "author": "Antonio Machado",
+    "source": "Proverbios y cantares",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "unamuno-001",
+    "text": "Faith is not believing in something, but believing in it enough to live by it.",
+    "author": "Miguel de Unamuno",
+    "source": "The Tragic Sense of Life",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "unamuno-002",
+    "text": "Progress consists not in changing one's opinions, but in changing one's conduct.",
+    "author": "Miguel de Unamuno",
+    "source": "essays",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "unamuno-003",
+    "text": "A man who does not contradict himself has never thought for himself.",
+    "author": "Miguel de Unamuno",
+    "source": "essays",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "lorca-001",
+    "text": "The poet speaks to the people, and the people speak to the poet.",
+    "author": "Federico García Lorca",
+    "source": "lectures",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "lorca-002",
+    "text": "Green, how I want you, green wind. Green branches.",
+    "author": "Federico García Lorca",
+    "source": "Romancero Gitano",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "fuster-001",
+    "text": "We are what we do, not what we say we are.",
+    "author": "Joan Fuster",
+    "source": "attributed",
+    "license": "public-domain",
+    "origin": "ca"
+  },
+  {
+    "id": "fuster-002",
+    "text": "A country is a group of people who share a memory and a project.",
+    "author": "Joan Fuster",
+    "source": "Nosaltres, els valencians",
+    "license": "public-domain",
+    "origin": "ca"
+  },
+  {
+    "id": "fuster-003",
+    "text": "Language is the blood of the spirit.",
+    "author": "Joan Fuster",
+    "source": "attributed",
+    "license": "public-domain",
+    "origin": "ca"
+  },
+  {
+    "id": "blasco-001",
+    "text": "The land that has no water is a land without a soul.",
+    "author": "Vicente Blasco Ibáñez",
+    "source": "La Barraca",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "blasco-002",
+    "text": "Work is the only prayer that never tires the tongue.",
+    "author": "Vicente Blasco Ibáñez",
+    "source": "attributed",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "blasco-003",
+    "text": "The true homeland is not the flag, but the field one waters with one's own sweat.",
+    "author": "Vicente Blasco Ibáñez",
+    "source": "Cañas y barro",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "cervantes-001",
+    "text": "The road is always better than the inn.",
+    "author": "Miguel de Cervantes",
+    "source": "Don Quixote",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "cervantes-002",
+    "text": "He who reads much and walks much, sees much and knows much.",
+    "author": "Miguel de Cervantes",
+    "source": "Don Quixote",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "cervantes-003",
+    "text": "There is no memory that time does not erase, no pain that death does not end.",
+    "author": "Miguel de Cervantes",
+    "source": "Don Quixote",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "cervantes-004",
+    "text": "The best sauce in the world is hunger.",
+    "author": "Miguel de Cervantes",
+    "source": "Don Quixote",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "juanacruz-001",
+    "text": "I am not moved to love you, God, by the heaven you have promised me.",
+    "author": "Sor Juana Inés de la Cruz",
+    "source": "poems",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "becquer-001",
+    "text": "What is poetry? you ask me while you fix your blue pupil on mine. Poetry is you.",
+    "author": "Gustavo Adolfo Bécquer",
+    "source": "Rimas",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "becquer-002",
+    "text": "Dreams are the soul's adventure.",
+    "author": "Gustavo Adolfo Bécquer",
+    "source": "attributed",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "gongora-001",
+    "text": "Everything in the world is a sign, and every sign is a lesson.",
+    "author": "Luis de Góngora",
+    "source": "attributed",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "quijote-proverb-001",
+    "text": "The early bird catches the worm.",
+    "author": "Spanish proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "quijote-proverb-002",
+    "text": "There is no evil that lasts a hundred years.",
+    "author": "Spanish proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "quijote-proverb-003",
+    "text": "Where there's a will, there's a way.",
+    "author": "Spanish proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "quijote-proverb-004",
+    "text": "A friend in need is a friend indeed.",
+    "author": "Spanish proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "quijote-proverb-005",
+    "text": "Little by little, one fills the basket.",
+    "author": "Spanish proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "quijote-proverb-006",
+    "text": "The pot that boils too long spills over.",
+    "author": "Spanish proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "quijote-proverb-007",
+    "text": "Many little streams make a great river.",
+    "author": "Spanish proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "quijote-proverb-008",
+    "text": "Patience is the mother of science.",
+    "author": "Spanish proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "quijote-proverb-009",
+    "text": "There is no rose without a thorn.",
+    "author": "Spanish proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "quijote-proverb-010",
+    "text": "The best defence is a good offence.",
+    "author": "Spanish proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "quijote-proverb-011",
+    "text": "A word to the wise is enough.",
+    "author": "Spanish proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "quijote-proverb-012",
+    "text": "The more you have, the more you want.",
+    "author": "Spanish proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "quijote-proverb-013",
+    "text": "Rivers do not drink their own water.",
+    "author": "Spanish proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "quijote-proverb-014",
+    "text": "He who sows the wind reaps the storm.",
+    "author": "Spanish proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "quijote-proverb-015",
+    "text": "The dog barks, the caravan passes.",
+    "author": "Spanish proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "quijote-proverb-016",
+    "text": "Better late than never.",
+    "author": "Spanish proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "quijote-proverb-017",
+    "text": "The grass is always greener on the other side.",
+    "author": "Spanish proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "quijote-proverb-018",
+    "text": "Hunger is the best sauce.",
+    "author": "Spanish proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "quijote-proverb-019",
+    "text": "When one door closes, another opens.",
+    "author": "Spanish proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "quijote-proverb-020",
+    "text": "Do good and do not look at whom.",
+    "author": "Spanish proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "es"
+  },
+  {
+    "id": "valencian-proverb-001",
+    "text": "In the land of the blind, the one-eyed man is king.",
+    "author": "Valencian proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "ca"
+  },
+  {
+    "id": "valencian-proverb-002",
+    "text": "The sea gives and the sea takes away.",
+    "author": "Valencian proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "ca"
+  },
+  {
+    "id": "valencian-proverb-003",
+    "text": "The fire is not to be played with.",
+    "author": "Valencian proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "ca"
+  },
+  {
+    "id": "valencian-proverb-004",
+    "text": "He who has a good neighbour has a good morning.",
+    "author": "Valencian proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "ca"
+  },
+  {
+    "id": "valencian-proverb-005",
+    "text": "The bread of the neighbour always smells better.",
+    "author": "Valencian proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "ca"
+  },
+  {
+    "id": "valencian-proverb-006",
+    "text": "Do not put off until tomorrow what you can do today.",
+    "author": "Valencian proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "ca"
+  },
+  {
+    "id": "valencian-proverb-007",
+    "text": "Storms make trees take deeper roots.",
+    "author": "Valencian proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "ca"
+  },
+  {
+    "id": "valencian-proverb-008",
+    "text": "The sun shines for everyone.",
+    "author": "Valencian proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "ca"
+  },
+  {
+    "id": "valencian-proverb-009",
+    "text": "He who does not risk, does not win.",
+    "author": "Valencian proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "ca"
+  },
+  {
+    "id": "valencian-proverb-010",
+    "text": "A good word costs little and is worth much.",
+    "author": "Valencian proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "ca"
+  },
+  {
+    "id": "valencian-proverb-011",
+    "text": "There is no bad weather, only bad clothing.",
+    "author": "Valencian proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "ca"
+  },
+  {
+    "id": "valencian-proverb-012",
+    "text": "Where there is smoke, there is fire.",
+    "author": "Valencian proverb",
+    "source": "traditional",
+    "license": "public-domain",
+    "origin": "ca"
+  }
+]
