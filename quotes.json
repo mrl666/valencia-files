@@ -34,8 +34,8 @@
   {
     "id": "seneca-005",
     "text": "Luck is what happens when preparation meets opportunity.",
-    "author": "Seneca",
-    "source": "attributed",
+    "author": "Seneca (attributed)",
+    "source": "modern paraphrase, not found verbatim in surviving works",
     "license": "public-domain",
     "origin": "la"
   },
@@ -110,30 +110,6 @@
     "source": "Romancero Gitano",
     "license": "public-domain",
     "origin": "es"
-  },
-  {
-    "id": "fuster-001",
-    "text": "We are what we do, not what we say we are.",
-    "author": "Joan Fuster",
-    "source": "attributed",
-    "license": "public-domain",
-    "origin": "ca"
-  },
-  {
-    "id": "fuster-002",
-    "text": "A country is a group of people who share a memory and a project.",
-    "author": "Joan Fuster",
-    "source": "Nosaltres, els valencians",
-    "license": "public-domain",
-    "origin": "ca"
-  },
-  {
-    "id": "fuster-003",
-    "text": "Language is the blood of the spirit.",
-    "author": "Joan Fuster",
-    "source": "attributed",
-    "license": "public-domain",
-    "origin": "ca"
   },
   {
     "id": "blasco-001",
