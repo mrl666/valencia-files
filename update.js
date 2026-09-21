@@ -107,5 +107,9 @@ html = html.replace(
   `<span id="edition">Updated ${stamp}</span>`
 );
 
+const weatherMatched = /<div class="strip-card">\s*<div class="kicker">Weather[\s\S]*?<!--\s*END-WEATHER\s*-->/.test(html);
+console.log('weatherMatched:', weatherMatched);
+console.log('weather loaded:', weather ? 'yes' : 'no');
+
 fs.writeFileSync(file, html);
 console.log('Updated index.html at', stamp);
