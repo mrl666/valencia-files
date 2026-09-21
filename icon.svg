@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Valencia Files">
+  <!-- Folder body -->
+  <path d="M6 20
+           a3 3 0 0 1 3-3
+           h16
+           l4 5
+           h26
+           a3 3 0 0 1 3 3
+           v24
+           a3 3 0 0 1-3 3
+           H9
+           a3 3 0 0 1-3-3
+           Z"
+        fill="#b31217"/>
+
+  <!-- Folder tab highlight (spine) -->
+  <rect x="6" y="17" width="22" height="3" rx="1.5" fill="#8f0e12"/>
+
+  <!-- Monogram: VF in white, tightly tracked -->
+  <text x="32" y="42"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="22"
+        font-weight="700"
+        letter-spacing="-1"
+        text-anchor="middle"
+        fill="#ffffff">VF</text>
+
+  <!-- Subtle baseline rule, the "spine" line -->
+  <rect x="20" y="46" width="24" height="1.5" rx="0.75" fill="#ffffff" opacity="0.35"/>
+</svg>
