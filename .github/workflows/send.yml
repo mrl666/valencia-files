@@ -15,12 +15,12 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '20'
-          
-      - name: Fetch Valencia news
-        run: node valencia.js > valencia.json || echo '[]' > valencia.json
 
       - name: Fetch weather
-        run: node weather.js > weather.json || echo '{}' > weather.json
+        run: node weather.js > weather.json
+
+      - name: Fetch Valencia news
+        run: node valencia.js > valencia.json || echo '[]' > valencia.json
 
       - name: Update index.html
         run: node update.js
