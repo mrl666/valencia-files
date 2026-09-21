@@ -74,7 +74,6 @@ if (valenciaNews) {
   );
 }
 
-// --- Inject weather (only if real data present) ---
 if (Array.isArray(weather) && weather.length === 3) {
   const buildCity = (city) => {
     const forecastHtml = city.forecast.map(f =>
