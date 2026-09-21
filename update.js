@@ -3,11 +3,10 @@ const fs = require('fs');
 const file = 'index.html';
 let html = fs.readFileSync(file, 'utf8');
 
-// --- Load weather if available (produced by: node weather.js > weather.json) ---
 let weather = null;
 try {
   weather = JSON.parse(fs.readFileSync('weather.json', 'utf8'));
-  if (!weather || !weather.current || !weather.forecast) weather = null;
+  if (!Array.isArray(weather) || weather.length !== 3) weather = null;
 } catch (e) {
   // no weather file — keep placeholder
 }
@@ -75,21 +74,27 @@ if (valenciaNews) {
 }
 
 // --- Inject weather (only if real data present) ---
-if (weather) {
-  const forecastHtml = weather.forecast.map(f =>
-    `<div><span class="d">${f.day}</span><span class="t">${f.high}°</span></div>`
-  ).join('');
+if (Array.isArray(weather) && weather.length === 3) {
+  const buildCity = (city) => {
+    const forecastHtml = city.forecast.map(f =>
+      `<div><span class="d">${f.day}</span><span class="t">${f.high}°</span></div>`
+    ).join('');
+    return `<div class="weather-city">
+      <div class="city-name">${city.name}</div>
+      <div class="weather-now">
+        <span class="temp">${city.current.temp}°</span>
+        <span class="desc">${city.current.desc}</span>
+      </div>
+      <div class="weather-forecast">${forecastHtml}</div>
+    </div>`;
+  };
 
   html = html.replace(
-    /<div class="strip-card">\s*<div class="kicker">Valencia now<\/div>[\s\S]*?<!--\s*END-WEATHER\s*-->/,
+    /<div class="strip-card">\s*<div class="kicker">Weather[^<]*<\/div>[\s\S]*?<!--\s*END-WEATHER\s*-->/,
     `<div class="strip-card">
-      <div class="kicker">Valencia now</div>
-      <div class="weather-now">
-        <span class="temp">${weather.current.temp}°</span>
-        <span class="desc">${weather.current.desc}</span>
-      </div>
-      <div class="weather-forecast">
-        ${forecastHtml}
+      <div class="kicker">Weather · València · Alacant · Castelló</div>
+      <div class="weather-cities">
+        ${weather.map(buildCity).join('')}
       </div>
       <div class="source-note">Source: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a></div>
     </div><!-- END-WEATHER -->`
