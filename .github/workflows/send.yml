@@ -19,6 +19,9 @@ jobs:
       - name: Fetch weather
         run: node weather.js > weather.json
 
+      - name: Show weather.json
+        run: cat weather.json
+
       - name: Fetch Valencia news
         run: node valencia.js > valencia.json || echo '[]' > valencia.json
 
