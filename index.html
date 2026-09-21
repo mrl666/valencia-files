@@ -51,20 +51,10 @@
     display:flex; gap:6px; align-items:center; justify-content:center;
     margin-top:10px;
   }
-  .flags span{
-    display:inline-block; width:26px; height:18px;
-    border:1px solid var(--rule); border-radius:2px;
-    vertical-align:middle;
-  }
-  /* Flags drawn in CSS to avoid external images */
-  .flag-vc{background:linear-gradient(to bottom,#ffd700 0 33%,#ce1126 33% 66%,#ffd700 66% 100%); position:relative}
-  .flag-vc::after{content:""; position:absolute; left:0; top:0; bottom:0; width:8px; background:#0033a0}
-  .flag-es{background:linear-gradient(to bottom,#aa151b 0 25%,#f1bf00 25% 75%,#aa151b 75% 100%)}
-  .flag-eu{background:#003399; position:relative}
-  .flag-eu::after{
-    content:"★"; position:absolute; inset:0;
-    display:flex; align-items:center; justify-content:center;
-    color:#ffcc00; font-size:10px; line-height:1;
+  .flags svg{
+    display:block;
+    border:1px solid var(--rule);
+    border-radius:2px;
   }
   .meta{
     display:flex; justify-content:space-between;
@@ -225,9 +215,60 @@
     </div>
 
     <div class="flags" aria-label="Region, country and union">
-      <span class="flag-vc" title="Comunitat Valenciana"></span>
-      <span class="flag-es" title="Spain"></span>
-      <span class="flag-eu" title="European Union"></span>
+
+      <!-- Comunitat Valenciana -->
+      <svg width="26" height="18" viewBox="0 0 26 18" role="img" aria-label="Comunitat Valenciana">
+        <!-- Yellow field -->
+        <rect width="26" height="18" fill="#FFD700"/>
+        <!-- Four red stripes -->
+        <rect y="0"    width="26" height="2.25" fill="#CE1126"/>
+        <rect y="4.5"  width="26" height="2.25" fill="#CE1126"/>
+        <rect y="9"    width="26" height="2.25" fill="#CE1126"/>
+        <rect y="13.5" width="26" height="2.25" fill="#CE1126"/>
+        <!-- Blue band on the hoist -->
+        <rect width="6" height="18" fill="#0033A0"/>
+        <!-- Simplified ratpenat (bat) in gold on the blue band -->
+        <path d="M3 5
+                 l0.7 1.2 l1.1 -0.9 l0.6 1.5 l1.1 -1.2 l0.5 1.5
+                 l0.5 -1.5 l1.1 1.2 l0.6 -1.5 l1.1 0.9 l0.7 -1.2
+                 l-0.4 3.5 l-1.2 1.5 l-2.4 1 l-2.4 -1 l-1.2 -1.5 Z"
+              fill="#FFD700"/>
+      </svg>
+
+      <!-- Spain -->
+      <svg width="26" height="18" viewBox="0 0 26 18" role="img" aria-label="Spain">
+        <!-- Red top and bottom, yellow middle (1:2:1) -->
+        <rect width="26" height="18" fill="#AA151B"/>
+        <rect y="4.5" width="26" height="9" fill="#F1BF00"/>
+        <!-- Simplified coat of arms, hoist side -->
+        <rect x="4" y="6.5" width="3" height="5" fill="#AA151B" opacity="0.85"/>
+        <rect x="4.4" y="6.9" width="2.2" height="4.2" fill="#F1BF00"/>
+        <rect x="5.1" y="7.4" width="0.8" height="3.2" fill="#AA151B"/>
+        <rect x="4.4" y="7.4" width="2.2" height="0.6" fill="#AA151B"/>
+      </svg>
+
+      <!-- European Union -->
+      <svg width="26" height="18" viewBox="0 0 26 18" role="img" aria-label="European Union">
+        <!-- Blue field -->
+        <rect width="26" height="18" fill="#003399"/>
+        <!-- Twelve gold stars in a circle -->
+        <g fill="#FFCC00">
+          <!-- Circle centre at (13,9), radius 4.5, star size ~1.4 -->
+          <polygon points="13,4.5 13.4,5.7 14.7,5.7 13.6,6.5 14.0,7.7 13,6.9 12.0,7.7 12.4,6.5 11.3,5.7 12.6,5.7" transform="translate(0,0)"/>
+          <polygon points="13,4.5 13.4,5.7 14.7,5.7 13.6,6.5 14.0,7.7 13,6.9 12.0,7.7 12.4,6.5 11.3,5.7 12.6,5.7" transform="rotate(30 13 9)"/>
+          <polygon points="13,4.5 13.4,5.7 14.7,5.7 13.6,6.5 14.0,7.7 13,6.9 12.0,7.7 12.4,6.5 11.3,5.7 12.6,5.7" transform="rotate(60 13 9)"/>
+          <polygon points="13,4.5 13.4,5.7 14.7,5.7 13.6,6.5 14.0,7.7 13,6.9 12.0,7.7 12.4,6.5 11.3,5.7 12.6,5.7" transform="rotate(90 13 9)"/>
+          <polygon points="13,4.5 13.4,5.7 14.7,5.7 13.6,6.5 14.0,7.7 13,6.9 12.0,7.7 12.4,6.5 11.3,5.7 12.6,5.7" transform="rotate(120 13 9)"/>
+          <polygon points="13,4.5 13.4,5.7 14.7,5.7 13.6,6.5 14.0,7.7 13,6.9 12.0,7.7 12.4,6.5 11.3,5.7 12.6,5.7" transform="rotate(150 13 9)"/>
+          <polygon points="13,4.5 13.4,5.7 14.7,5.7 13.6,6.5 14.0,7.7 13,6.9 12.0,7.7 12.4,6.5 11.3,5.7 12.6,5.7" transform="rotate(180 13 9)"/>
+          <polygon points="13,4.5 13.4,5.7 14.7,5.7 13.6,6.5 14.0,7.7 13,6.9 12.0,7.7 12.4,6.5 11.3,5.7 12.6,5.7" transform="rotate(210 13 9)"/>
+          <polygon points="13,4.5 13.4,5.7 14.7,5.7 13.6,6.5 14.0,7.7 13,6.9 12.0,7.7 12.4,6.5 11.3,5.7 12.6,5.7" transform="rotate(240 13 9)"/>
+          <polygon points="13,4.5 13.4,5.7 14.7,5.7 13.6,6.5 14.0,7.7 13,6.9 12.0,7.7 12.4,6.5 11.3,5.7 12.6,5.7" transform="rotate(270 13 9)"/>
+          <polygon points="13,4.5 13.4,5.7 14.7,5.7 13.6,6.5 14.0,7.7 13,6.9 12.0,7.7 12.4,6.5 11.3,5.7 12.6,5.7" transform="rotate(300 13 9)"/>
+          <polygon points="13,4.5 13.4,5.7 14.7,5.7 13.6,6.5 14.0,7.7 13,6.9 12.0,7.7 12.4,6.5 11.3,5.7 12.6,5.7" transform="rotate(330 13 9)"/>
+        </g>
+      </svg>
+
     </div>
 
     <div class="meta">
