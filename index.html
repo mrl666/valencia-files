@@ -96,6 +96,29 @@
     color:var(--muted); text-transform:uppercase; letter-spacing:.08em;
   }
 
+    .weather-cities{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+  }
+  .weather-city{
+    border-right:1px dotted var(--rule); padding-right:8px;
+  }
+  .weather-city:last-child{border-right:none; padding-right:0}
+  .weather-city .city-name{
+    font-family:Helvetica,Arial,sans-serif; font-size:10px;
+    text-transform:uppercase; letter-spacing:.08em;
+    color:var(--muted); margin-bottom:4px;
+  }
+  .weather-city .weather-now .temp{font-size:22px}
+  .weather-city .weather-now .desc{font-size:12px}
+  .weather-city .weather-forecast{font-size:10px; gap:6px; margin-top:6px}
+  .weather-city .weather-forecast .t{font-size:12px}
+
+  @media (max-width:640px){
+    .weather-cities{grid-template-columns:1fr}
+    .weather-city{border-right:none; border-bottom:1px dotted var(--rule); padding:0 0 8px 0}
+    .weather-city:last-child{border-bottom:none; padding-bottom:0}
+  }
+
   /* Brief */
   .brief{
     background:var(--card); border:1px solid var(--rule);
