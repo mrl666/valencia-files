@@ -525,16 +525,6 @@
     document.getElementById('edition').textContent = edition + ' edition';
     document.getElementById('year').textContent = now.getFullYear();
 
-    var thoughts = [
-      {t:"No wind is favourable for the sailor who does not know which port they are heading to.", a:"Seneca"},
-      {t:"We suffer more often in imagination than in reality.", a:"Seneca"},
-      {t:"The best way out is always through.", a:"Robert Frost"},
-      {t:"Little by little, one travels far.", a:"J.R.R. Tolkien"},
-      {t:"What you do every day matters more than what you do once in a while.", a:"Gretchen Rubin"}
-    ];
-    var pick = thoughts[Math.floor(Date.now() / 3600000) % thoughts.length];
-    document.getElementById('thought').innerHTML = '“' + pick.t + '”<span class="author" id="thought-author">— ' + pick.a + '</span>';
-
     document.querySelectorAll('.tab-nav button').forEach(function(btn){
       btn.addEventListener('click', function(){
         var id = btn.getAttribute('data-tab');
