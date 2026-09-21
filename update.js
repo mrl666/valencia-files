@@ -5,6 +5,7 @@ let html = fs.readFileSync(file, 'utf8');
 
 let weather = null;
 try {
+  debugger;
   weather = JSON.parse(fs.readFileSync('weather.json', 'utf8'));
   if (!Array.isArray(weather) || weather.length !== 3) weather = null;
 } catch (e) {
@@ -75,6 +76,7 @@ if (valenciaNews) {
 }
 
 if (Array.isArray(weather) && weather.length === 3) {
+  debugger;
   const buildCity = (city) => {
     const forecastHtml = city.forecast.map(f =>
       `<div><span class="d">${f.day}</span><span class="t">${f.high}°</span></div>`
