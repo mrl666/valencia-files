@@ -21,15 +21,39 @@ try {
   valenciaNews = null;
 }
 
-// --- Rotating thought pool ---
-const thoughts = [
-  { t: "No wind is favourable for the sailor who does not know which port they are heading to.", a: "Seneca" },
-  { t: "We suffer more often in imagination than in reality.", a: "Seneca" },
-  { t: "The best way out is always through.", a: "Robert Frost" },
-  { t: "Little by little, one travels far.", a: "J.R.R. Tolkien" },
-  { t: "What you do every day matters more than what you do once in a while.", a: "Gretchen Rubin" }
-];
-const pick = thoughts[Math.floor(Date.now() / 3600000) % thoughts.length];
+// --- Pick thought of the day (rotation) ---
+let thought = null;
+try {
+  const quotes = JSON.parse(fs.readFileSync('quotes.json', 'utf8'));
+  const used = JSON.parse(fs.readFileSync('used.json', 'utf8'));
+
+  const now = Date.now();
+  const COOLDOWN_DAYS = 60;
+  const cooldownMs = COOLDOWN_DAYS * 24 * 3600 * 1000;
+
+  const lastUsed = new Map();
+  used.forEach(entry => {
+    if (entry && entry.id) lastUsed.set(entry.id, entry.at || 0);
+  });
+
+  const fresh = quotes.filter(q => {
+    const at = lastUsed.get(q.id) || 0;
+    return (now - at) > cooldownMs;
+  });
+
+  const pool = fresh.length ? fresh : quotes.slice().sort((a, b) => {
+    return (lastUsed.get(a.id) || 0) - (lastUsed.get(b.id) || 0);
+  });
+
+  const slot = Math.floor(now / 3600000) % pool.length;
+  thought = pool[slot];
+
+  const updatedUsed = used.filter(e => e.id !== thought.id);
+  updatedUsed.push({ id: thought.id, at: now });
+  fs.writeFileSync('used.json', JSON.stringify(updatedUsed, null, 2));
+} catch (e) {
+  console.error('Quote picker error:', e.message);
+}
 
 // --- Rotating lead pool (placeholder until real feeds land) ---
 const headlines = [
@@ -76,11 +100,14 @@ function replaceById(html, id, newInner) {
 }
 
 // --- Inject thought ---
-html = replaceById(
-  html,
-  'thought-block',
-  `<p class="thought" id="thought">“${pick.t}”<span class="author" id="thought-author">— ${pick.a}</span></p>`
-);
+if (thought) {
+  html = replaceById(
+    html,
+    'thought-block',
+    `<div class="kicker">Thought of the day</div>
+     <p class="thought" id="thought">“${thought.text}”<span class="author" id="thought-author">— ${thought.author}</span></p>`
+  );
+}
 
 // --- Inject lead ---
 html = replaceById(
