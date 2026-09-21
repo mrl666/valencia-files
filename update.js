@@ -5,8 +5,8 @@ let html = fs.readFileSync(file, 'utf8');
 
 let weather = null;
 try {
-  debugger;
   weather = JSON.parse(fs.readFileSync('weather.json', 'utf8'));
+  console.log(weather);
   if (!Array.isArray(weather) || weather.length !== 3) weather = null;
 } catch (e) {
   weather = null;
