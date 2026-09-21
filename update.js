@@ -8,7 +8,8 @@ try {
   weather = JSON.parse(fs.readFileSync('weather.json', 'utf8'));
   if (!Array.isArray(weather) || weather.length !== 3) weather = null;
 } catch (e) {
-  // no weather file — keep placeholder
+  weather = null;
+  console.log(1);
 }
 
 // --- Load Valencia news if available ---
