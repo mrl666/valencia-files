@@ -33,6 +33,22 @@ jobs:
       - name: Fetch Castellón news
         run: node castellon.js > castellon.json || echo '[]' > castellon.json
 
+      - name: Translate headlines
+        env:
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+        run: node translate.js > translated.json
+
+      - name: Update index.html
+        run: node update.js
+
+      - name: Commit updated page
+        run: |
+          git config user.name "valencia-files-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add index.html used.json used-news.json lead.json translated.json translations-cache.json
+          git commit -m "Edition update $(date -u +'%Y-%m-%dT%H:%M')" || echo "No changes"
+          git push
+
       - name: Update index.html
         run: node update.js
 
