@@ -19,6 +19,25 @@ jobs:
       - name: Fetch weather
         run: node weather.js > weather.json
 
+      - name: Fetch weather
+        run: node weather.js > weather.json
+
+      - name: Fetch GVA Lead
+        env:
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+        run: node fetch-lead.js > lead.json
+
+      - name: Fetch Valencia news (fallback)
+        run: node valencia.js > valencia.json
+
+      - name: Commit updated page
+        run: |
+          git config user.name "valencia-files-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add index.html used.json used-news.json lead.json
+          git commit -m "Edition update $(date -u +'%Y-%m-%dT%H:%M')" || echo "No changes"
+          git push
+
       - name: Fetch Valencia news
         run: node valencia.js > valencia.json
 
