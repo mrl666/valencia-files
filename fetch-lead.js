@@ -1,45 +1,73 @@
-const fs = require('fs');
-
 const PIXABAY_API_KEY = process.env.PIXABAY_API_KEY;
 
-async function run() {
-  // 1. Fetch the Generalitat news page
-  const listUrl = 'https://comunica.gva.es/es/totes';
-  const res = await fetch(listUrl, {
-    headers: { 'User-Agent': 'ValenciaFiles/1.0 (+https://github.com/mrl666/valencia-files)' }
+// Keywords for the Pixabay image — use general Valencia themes
+const IMAGE_KEYWORDS = 'valencia spain';
+
+async function fetchImage() {
+  if (!PIXABAY_API_KEY) return null;
+  try {
+    const url = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}` +
+                `&q=${encodeURIComponent(IMAGE_KEYWORDS)}` +
+                `&image_type=photo&orientation=horizontal&per_page=3&safesearch=true`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.hits && data.hits.length > 0) {
+      const img = data.hits[0];
+      return {
+        url: img.webformatURL,
+        credit: `Photo by ${img.user} on Pixabay`,
+        sourceUrl: img.pageURL
+      };
+    }
+  } catch (e) {
+    // Ignore image errors — lead still works without an image
+  }
+  return null;
+}
+
+async function fetchLead() {
+  const url = 'https://comunica.gva.es/es/totes';
+
+  const res = await fetch(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (compatible; ValenciaFiles/1.0; +https://github.com/mrl666/valencia-files)',
+      'Accept': 'text/html,application/xhtml+xml',
+      'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8'
+    },
+    redirect: 'follow'
   });
   if (!res.ok) throw new Error(`GVA HTTP ${res.status}`);
   const html = await res.text();
 
-  // 2. Extract the first headline and link
-  const linkRe = /<a[^>]+href="([^"]*detalle[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
-  const match = linkRe.exec(html);
-  if (!match) throw new Error('No lead headline found on GVA page');
+  // Extract the first news headline and link.
+  // GVA items look like <a href="/es/detalle?id=...">TITLE</a> or similar.
+  const linkRe = /<a[^>]+href="([^"]*(?:detalle|noticia)[^"]*)"[^>]*>([\s\S]*?)<\/a>/g;
 
-  const url = match[1].startsWith('http') ? match[1] : 'https://comunica.gva.es' + match[1];
-  const title = match[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  let match;
+  let lead = null;
+  while ((match = linkRe.exec(html)) !== null) {
+    const link = match[1];
+    const title = match[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    if (title.length < 15) continue;
+    lead = {
+      title,
+      url: link.startsWith('http') ? link : 'https://comunica.gva.es' + link
+    };
+    break;
+  }
 
-  // 3. Fetch a free image from Pixabay based on the headline keywords
-  const keywords = title.split(' ').slice(0, 3).join('+'); // Use first 3 words as keywords
-  const pixabayUrl = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${keywords}&image_type=photo&orientation=horizontal&per_page=3`;
-  const pixabayRes = await fetch(pixabayUrl);
-  const pixabayData = await pixabayRes.json();
-  const image = pixabayData.hits && pixabayData.hits.length > 0 ? pixabayData.hits[0] : null;
+  if (!lead) throw new Error('No GVA lead found');
 
-  const lead = {
-    title,
-    url,
-    image: image ? {
-      url: image.webformatURL,
-      credit: `Photo by ${image.user} on Pixabay`,
-      sourceUrl: image.pageURL
-    } : null
-  };
+  const image = await fetchImage();
+  if (image) lead.image = image;
 
-  console.log(JSON.stringify(lead));
+  return lead;
 }
 
-run().catch(err => {
-  console.error('Lead fetch error:', err.message);
-  process.exit(1);
-});
+fetchLead()
+  .then(lead => console.log(JSON.stringify(lead)))
+  .catch(err => {
+    console.error('Lead fetch error:', err.message);
+    process.exit(1);
+  });
