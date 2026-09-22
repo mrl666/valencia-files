@@ -10,12 +10,45 @@ try {
   if (!Array.isArray(weather) || weather.length !== 3) weather = null;
 } catch (e) { weather = null; }
 
-// --- Load Valencia pool ---
+// --- Load GVA Lead ---
+let leadNews = null;
+try {
+  leadNews = JSON.parse(fs.readFileSync('lead.json', 'utf8'));
+} catch (e) { leadNews = null; }
+
+// --- Load Valencia pool (for secondary stories) ---
 let valenciaPool = [];
 try {
   valenciaPool = JSON.parse(fs.readFileSync('valencia.json', 'utf8'));
   if (!Array.isArray(valenciaPool)) valenciaPool = [];
 } catch (e) { valenciaPool = []; }
+
+// --- Inject GVA Lead ---
+if (leadNews) {
+  html = replaceById(html, 'lead-story',
+    `${leadNews.image ?
+      `<img id="lead-image" src="${esc(leadNews.image.url)}" alt="" style="width:100%; height:200px; object-fit:cover; display:block; margin-bottom:12px; border:1px solid var(--rule);">
+       <div id="lead-image-credit" class="image-credit" style="display:block; margin-top:-8px;">${esc(leadNews.image.credit)} — <a href="${esc(leadNews.image.sourceUrl)}" target="_blank" rel="noopener">Source</a></div>` : ''
+    }
+    <h2>${esc(leadNews.title)}</h2>
+    <span class="src"><a href="${esc(leadNews.url)}" target="_blank" rel="noopener">Source: Generalitat Valenciana</a></span>`
+  );
+}
+
+// --- Inject Valencia secondary stories (fallback to old logic if GVA lead fails) ---
+if (valenciaPool.length >= 3) {
+  // Use the shuffle logic from before, but skip the first item (which was the lead)
+  let shuffled = shuffle(valenciaPool, seed);
+  const secondary = shuffled.slice(0, 3);
+
+  const secHtml = secondary.map(item =>
+    `<li>
+      <h3><a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.title)}</a></h3>
+      <span class="src">Source: Ajuntament de València · ${esc(item.date || '')}</span>
+    </li>`
+  ).join('');
+  html = replaceById(html, 'valencia-stories', secHtml);
+}
 
 // --- Load Alicante pool ---
 let alicantePool = [];
