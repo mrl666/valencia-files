@@ -10,45 +10,19 @@ try {
   if (!Array.isArray(weather) || weather.length !== 3) weather = null;
 } catch (e) { weather = null; }
 
-// --- Load GVA Lead ---
+// --- Load GVA lead ---
 let leadNews = null;
 try {
   leadNews = JSON.parse(fs.readFileSync('lead.json', 'utf8'));
+  if (!leadNews || !leadNews.title) leadNews = null;
 } catch (e) { leadNews = null; }
 
-// --- Load Valencia pool (for secondary stories) ---
+// --- Load Valencia pool (secondary stories) ---
 let valenciaPool = [];
 try {
   valenciaPool = JSON.parse(fs.readFileSync('valencia.json', 'utf8'));
   if (!Array.isArray(valenciaPool)) valenciaPool = [];
 } catch (e) { valenciaPool = []; }
-
-// --- Inject GVA Lead ---
-if (leadNews) {
-  html = replaceById(html, 'lead-story',
-    `${leadNews.image ?
-      `<img id="lead-image" src="${esc(leadNews.image.url)}" alt="" style="width:100%; height:200px; object-fit:cover; display:block; margin-bottom:12px; border:1px solid var(--rule);">
-       <div id="lead-image-credit" class="image-credit" style="display:block; margin-top:-8px;">${esc(leadNews.image.credit)} — <a href="${esc(leadNews.image.sourceUrl)}" target="_blank" rel="noopener">Source</a></div>` : ''
-    }
-    <h2>${esc(leadNews.title)}</h2>
-    <span class="src"><a href="${esc(leadNews.url)}" target="_blank" rel="noopener">Source: Generalitat Valenciana</a></span>`
-  );
-}
-
-// --- Inject Valencia secondary stories (fallback to old logic if GVA lead fails) ---
-if (valenciaPool.length >= 3) {
-  // Use the shuffle logic from before, but skip the first item (which was the lead)
-  let shuffled = shuffle(valenciaPool, seed);
-  const secondary = shuffled.slice(0, 3);
-
-  const secHtml = secondary.map(item =>
-    `<li>
-      <h3><a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.title)}</a></h3>
-      <span class="src">Source: Ajuntament de València · ${esc(item.date || '')}</span>
-    </li>`
-  ).join('');
-  html = replaceById(html, 'valencia-stories', secHtml);
-}
 
 // --- Load Alicante pool ---
 let alicantePool = [];
@@ -64,14 +38,14 @@ try {
   if (!Array.isArray(castellonPool)) castellonPool = [];
 } catch (e) { castellonPool = []; }
 
-// --- Load used-news tracking ---
+// --- Load used-news ---
 let usedNews = [];
 try {
   usedNews = JSON.parse(fs.readFileSync('used-news.json', 'utf8'));
   if (!Array.isArray(usedNews)) usedNews = [];
 } catch (e) { usedNews = []; }
 
-// --- Load quotes + used quotes ---
+// --- Load quotes + rotation ---
 let thought = null;
 try {
   const quotes = JSON.parse(fs.readFileSync('quotes.json', 'utf8'));
@@ -124,27 +98,33 @@ function shuffle(arr, seed) {
 }
 
 function esc(s) {
-  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }
 
 const stamp = new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
-const seed = Math.floor(Date.now() / 3600000); // changes each hour
+const seed = Math.floor(Date.now() / 3600000);
 
-// --- Pick Valencia lead + 3 secondary (shuffled, avoiding last lead) ---
-if (valenciaPool.length >= 4) {
-  const lastLeadId = usedNews[0]?.id || null;
-  let shuffled = shuffle(valenciaPool, seed);
-  if (lastLeadId && shuffled[0].id === lastLeadId && shuffled.length > 1) {
-    [shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]];
-  }
-  const lead = shuffled[0];
-  const secondary = shuffled.slice(1, 4);
+// --- Inject GVA Lead ---
+if (leadNews) {
+  const imageHtml = leadNews.image
+    ? `<img id="lead-image" src="${esc(leadNews.image.url)}" alt="" style="width:100%; height:200px; object-fit:cover; display:block; margin-bottom:6px; border:1px solid var(--rule);">
+       <div class="image-credit" style="margin-bottom:12px;">${esc(leadNews.image.credit)} — <a href="${esc(leadNews.image.sourceUrl)}" target="_blank" rel="noopener">Source</a></div>`
+    : '';
 
   html = replaceById(html, 'lead-story',
-    `<h2>${esc(lead.title)}</h2>
-     <span class="src"><a href="${esc(lead.url)}" target="_blank" rel="noopener">Source: Ajuntament de València · ${esc(lead.date || stamp)}</a></span>`
+    `${imageHtml}
+     <h2>${esc(leadNews.title)}</h2>
+     <span class="src"><a href="${esc(leadNews.url)}" target="_blank" rel="noopener">Source: Generalitat Valenciana · ${stamp}</a></span>`
   );
+}
 
+// --- Inject Valencia secondary stories ---
+if (valenciaPool.length >= 3) {
+  const shuffled = shuffle(valenciaPool, seed);
+  const secondary = shuffled.slice(0, 3);
   const secHtml = secondary.map(item =>
     `<li>
       <h3><a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.title)}</a></h3>
@@ -153,12 +133,11 @@ if (valenciaPool.length >= 4) {
   ).join('');
   html = replaceById(html, 'valencia-stories', secHtml);
 
-  // Record used lead
-  usedNews = [{ id: lead.id, at: Date.now() }];
+  usedNews = [{ id: secondary[0].id, at: Date.now() }];
   fs.writeFileSync('used-news.json', JSON.stringify(usedNews, null, 2));
 }
 
-// --- Alicante section ---
+// --- Inject Alicante stories ---
 if (alicantePool.length >= 1) {
   const picks = shuffle(alicantePool, seed + 7).slice(0, 3);
   const htmlList = picks.map(item =>
@@ -170,7 +149,7 @@ if (alicantePool.length >= 1) {
   html = replaceById(html, 'alicante-stories', htmlList);
 }
 
-// --- Castellón section ---
+// --- Inject Castellón stories ---
 if (castellonPool.length >= 1) {
   const picks = shuffle(castellonPool, seed + 13).slice(0, 3);
   const htmlList = picks.map(item =>
