@@ -3,40 +3,35 @@ const fs = require('fs');
 const file = 'index.html';
 let html = fs.readFileSync(file, 'utf8');
 
+// --- Load everything from translated.json ---
+// translated.json is produced by translate.js and contains:
+//   { lead, valencia: [], alicante: [], castellon: [] }
+let translated = { lead: null, valencia: [], alicante: [], castellon: [] };
+try {
+  const parsed = JSON.parse(fs.readFileSync('translated.json', 'utf8'));
+  if (parsed && typeof parsed === 'object') {
+    translated = {
+      lead: parsed.lead || null,
+      valencia: Array.isArray(parsed.valencia) ? parsed.valencia : [],
+      alicante: Array.isArray(parsed.alicante) ? parsed.alicante : [],
+      castellon: Array.isArray(parsed.castellon) ? parsed.castellon : []
+    };
+  }
+} catch (e) {
+  // translated.json missing or malformed — keep empty defaults
+}
+
+const leadNews      = translated.lead;
+const valenciaPool  = translated.valencia;
+const alicantePool  = translated.alicante;
+const castellonPool = translated.castellon;
+
 // --- Load weather ---
 let weather = null;
 try {
   weather = JSON.parse(fs.readFileSync('weather.json', 'utf8'));
   if (!Array.isArray(weather) || weather.length !== 3) weather = null;
 } catch (e) { weather = null; }
-
-// --- Load GVA lead ---
-let leadNews = null;
-try {
-  leadNews = JSON.parse(fs.readFileSync('lead.json', 'utf8'));
-  if (!leadNews || !leadNews.title) leadNews = null;
-} catch (e) { leadNews = null; }
-
-// --- Load Valencia pool (secondary stories) ---
-let valenciaPool = [];
-try {
-  valenciaPool = JSON.parse(fs.readFileSync('valencia.json', 'utf8'));
-  if (!Array.isArray(valenciaPool)) valenciaPool = [];
-} catch (e) { valenciaPool = []; }
-
-// --- Load Alicante pool ---
-let alicantePool = [];
-try {
-  alicantePool = JSON.parse(fs.readFileSync('alicante.json', 'utf8'));
-  if (!Array.isArray(alicantePool)) alicantePool = [];
-} catch (e) { alicantePool = []; }
-
-// --- Load Castellón pool ---
-let castellonPool = [];
-try {
-  castellonPool = JSON.parse(fs.readFileSync('castellon.json', 'utf8'));
-  if (!Array.isArray(castellonPool)) castellonPool = [];
-} catch (e) { castellonPool = []; }
 
 // --- Load used-news ---
 let usedNews = [];
@@ -108,7 +103,7 @@ const stamp = new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
 const seed = Math.floor(Date.now() / 3600000);
 
 // --- Inject GVA Lead ---
-if (leadNews) {
+if (leadNews && leadNews.title) {
   const imageHtml = leadNews.image
     ? `<img id="lead-image" src="${esc(leadNews.image.url)}" alt="" style="width:100%; height:200px; object-fit:cover; display:block; margin-bottom:6px; border:1px solid var(--rule);">
        <div class="image-credit" style="margin-bottom:12px;">${esc(leadNews.image.credit)} — <a href="${esc(leadNews.image.sourceUrl)}" target="_blank" rel="noopener">Source</a></div>`
