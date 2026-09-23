@@ -3,6 +3,7 @@
 
 const BASE = 'https://www.valencia.es';
 const LIST_URL = 'https://www.valencia.es/cas/noticia/-/asset_publisher/R6s7fmDk1GN5/';
+console.error('valencia.js starting…');
 
 async function fetchPage(page) {
   const url = page === 1
