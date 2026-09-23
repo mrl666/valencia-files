@@ -27,7 +27,7 @@ jobs:
       - name: Fetch Valencia news
         run: node valencia.js > valencia.json || echo '[]' > valencia.json
 
-       - name: Show valencia.json
+      - name: Show valencia.json
         run: cat valencia.json
 
       - name: Fetch Alicante news
