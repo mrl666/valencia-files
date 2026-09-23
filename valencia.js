@@ -57,7 +57,10 @@ async function run() {
   console.log(JSON.stringify(all));
 }
 
-run().catch(err => {
-  console.error('Valencia scrape error:', err.message);
-  process.exit(1);
-});
+console.error('valencia.js done, about to log output');
+run()
+  .then(() => console.error('valencia.js finished successfully'))
+  .catch(err => {
+    console.error('Valencia scrape error:', err.message);
+    process.exit(1);
+  });
