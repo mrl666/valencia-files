@@ -1,7 +1,7 @@
 // Scrape Castellón
 
 const BASE = 'https://www.dipcas.es';
-const LIST_URL = 'https://www.dipcas.es/es/posts/public';
+const LIST_URL = 'https://www.dipcas.es/es/actualidad/rss';
 
 async function run() {
   console.error('castellon.js starting…');
