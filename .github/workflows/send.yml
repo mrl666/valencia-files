@@ -33,6 +33,9 @@ jobs:
       - name: Fetch Alicante news
         run: node alicante.js > alicante.json || echo '[]' > alicante.json
 
+      - name: Show alicante.json
+        run: cat alicante.json
+
       - name: Fetch Castellón news
         run: node castellon.js > castellon.json || echo '[]' > castellon.json
 
