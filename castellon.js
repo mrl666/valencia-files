@@ -1,12 +1,19 @@
-// Scrape Castellón news from the EDUSI portal (most stable source found)
-// Source: https://edusitransformacs.castello.es/actualidad/
+// Scrape Castellón city news
+// Source: https://www.castello.es/es/noticies
 
 const BASE = 'https://www.castello.es';
 const LIST_URL = 'https://www.castello.es/es/noticies';
 
 async function run() {
+  console.error('castellon.js starting…');
+
   const res = await fetch(LIST_URL, {
-    headers: { 'User-Agent': 'ValenciaFiles/1.0 (+github.com/mrl666/valencia-files)' }
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (compatible; ValenciaFiles/1.0; +https://github.com/mrl666/valencia-files)',
+      'Accept': 'text/html,application/xhtml+xml',
+      'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8'
+    },
+    redirect: 'follow'
   });
   if (!res.ok) throw new Error(`Castellón HTTP ${res.status}`);
   const html = await res.text();
@@ -14,29 +21,39 @@ async function run() {
   const items = [];
   const seen = new Set();
 
-  // Each news item: <a href="/actualidad/...">Title</a>
-  const linkRe = /<a[^>]+href="([^"]*\/actualidad\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
+  // Pattern: <a href="..."> <h3>TITLE</h3> </a> ... <p class="...date">DD/MM/YYYY</p>
+  const re = /<a[^>]+href="([^"]+)"[^>]*>\s*<h3>([\s\S]*?)<\/h3>\s*<\/a>([\s\S]{0,800}?)<p[^>]*class="[^"]*three-columns-news__item__date[^"]*"[^>]*>\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/g;
+
   let m;
-  while ((m = linkRe.exec(html)) !== null) {
+  while ((m = re.exec(html)) !== null) {
     const url = m[1];
     if (seen.has(url)) continue;
 
     const title = m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-    if (!title || title.length < 15) continue;
+    if (!title || title.length < 12) continue;
 
-    const slice = html.slice(m.index, m.index + 1500);
-    const dateMatch = slice.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-    const date = dateMatch ? `${dateMatch[3]}-${dateMatch[2].padStart(2,'0')}-${dateMatch[1].padStart(2,'0')}` : '';
+    const day = String(m[4]).padStart(2, '0');
+    const month = String(m[5]).padStart(2, '0');
+    const year = m[6];
+    const date = `${year}-${month}-${day}`;
 
     const id = url.split('/').filter(Boolean).pop() || url;
     seen.add(url);
-    items.push({ id, title, url: url.startsWith('http') ? url : BASE + url, date });
+    items.push({
+      id,
+      title,
+      url: url.startsWith('http') ? url : BASE + url,
+      date
+    });
   }
 
-  console.log(JSON.stringify(items.slice(0, 15)));
+  console.error(`castellon.js extracted ${items.length} items`);
+  console.log(JSON.stringify(items.slice(0, 20)));
 }
 
-run().catch(err => {
-  console.error('Castellón scrape error:', err.message);
-  process.exit(1);
-});
+run()
+  .then(() => console.error('castellon.js finished OK'))
+  .catch(err => {
+    console.error('Castellón scrape error:', err.message);
+    process.exit(1);
+  });
