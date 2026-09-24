@@ -1,8 +1,8 @@
 // Scrape Castellón news from the EDUSI portal (most stable source found)
 // Source: https://edusitransformacs.castello.es/actualidad/
 
-const BASE = 'https://edusitransformacs.castello.es';
-const LIST_URL = 'https://edusitransformacs.castello.es/actualidad/';
+const BASE = 'https://www.castello.es';
+const LIST_URL = 'https://www.castello.es/es/noticies';
 
 async function run() {
   const res = await fetch(LIST_URL, {
