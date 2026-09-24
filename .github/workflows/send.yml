@@ -36,6 +36,10 @@ jobs:
       - name: Show alicante.json
         run: cat alicante.json
 
+      - name: Ping castello.es
+        run: |
+          curl -sI -A "Mozilla/5.0" https://www.castello.es/es/noticies | head -20
+
       - name: Fetch Castellón news
         run: node castellon.js > castellon.json || echo '[]' > castellon.json
 
