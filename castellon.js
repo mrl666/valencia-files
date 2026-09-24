@@ -1,8 +1,7 @@
-// Scrape Castellón city news
-// Source: https://www.castello.es/es/noticies
+// Scrape Castellón
 
-const BASE = 'https://www.castello.es';
-const LIST_URL = 'https://www.castello.es/es/noticies';
+const BASE = 'https://www.dipcas.es';
+const LIST_URL = 'https://www.dipcas.es/es/posts/public';
 
 async function run() {
   console.error('castellon.js starting…');
