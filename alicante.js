@@ -4,6 +4,8 @@
 const BASE = 'https://www.alicante.es';
 const LIST_URL = 'https://www.alicante.es/es/noticias/la-ciudad';
 
+console.error('alicante.js starting…');
+
 async function run() {
   const res = await fetch(LIST_URL, {
     headers: { 'User-Agent': 'ValenciaFiles/1.0 (+github.com/mrl666/valencia-files)' }
@@ -47,7 +49,10 @@ async function run() {
   console.log(JSON.stringify(items.slice(0, 20)));
 }
 
-run().catch(err => {
-  console.error('Alicante scrape error:', err.message);
-  process.exit(1);
-});
+console.error('alicante.js done');
+run()
+  .then(() => console.error('alicante.js finished OK'))
+  .catch(err => {
+    console.error('Alicante scrape error:', err.message);
+    process.exit(1);
+  });
