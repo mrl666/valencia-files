@@ -7,14 +7,16 @@ const LIST_URL = 'https://www.castello.es/es/noticies';
 async function run() {
   console.error('castellon.js starting…');
 
-  const res = await fetch(LIST_URL, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (compatible; ValenciaFiles/1.0; +https://github.com/mrl666/valencia-files)',
-      'Accept': 'text/html,application/xhtml+xml',
-      'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8'
-    },
-    redirect: 'follow'
-  });
+const res = await fetch(LIST_URL, {
+  method: 'GET',
+  headers: {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+    'Connection': 'keep-alive'
+  },
+  redirect: 'follow'
+});
   if (!res.ok) throw new Error(`Castellón HTTP ${res.status}`);
   const html = await res.text();
 
