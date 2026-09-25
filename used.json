@@ -188,10 +188,6 @@
     "at": 1790285525619
   },
   {
-    "id": "valencian-proverb-002",
-    "at": 1790312346043
-  },
-  {
     "id": "quijote-proverb-009",
     "at": 1790324254071
   },
@@ -226,5 +222,9 @@
   {
     "id": "quijote-proverb-018",
     "at": 1790337134185
+  },
+  {
+    "id": "valencian-proverb-002",
+    "at": 1790337135509
   }
 ]
