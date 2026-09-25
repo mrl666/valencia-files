@@ -57,6 +57,9 @@ jobs:
       - name: Fetch Castellón news
         run: node castellon.js > castellon.json || echo '[]' > castellon.json
 
+      - name: Show castellon.json
+        run: cat castellon.json
+
       - name: Translate headlines
         env:
           DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
