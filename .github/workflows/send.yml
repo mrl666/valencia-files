@@ -36,24 +36,26 @@ jobs:
       - name: Show alicante.json
         run: cat alicante.json
 
-      - name: Test dipcas.es
+      - name: Dump dipcas HTML structure
         run: |
-          echo "=== HTTP headers ==="
-          curl -sI -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36" \
-            -H "Accept-Language: es-ES,es;q=0.9" \
-            https://www.dipcas.es/es/actualidad/ | head -20
-          echo ""
-          echo "=== First 2000 chars of body ==="
           curl -s -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36" \
             -H "Accept-Language: es-ES,es;q=0.9" \
-            https://www.dipcas.es/es/actualidad/ | head -c 2000
+            https://www.dipcas.es/es/actualidad/ > /tmp/dipcas.html
+          echo "=== Total length ==="
+          wc -c /tmp/dipcas.html
           echo ""
-          echo "=== Search for RSS link ==="
-          curl -s -A "Mozilla/5.0" https://www.dipcas.es/es/actualidad/ | grep -o -i 'rss[^"]*' | head -5
+          echo "=== All og:url occurrences ==="
+          grep -o 'og:url[^>]*' /tmp/dipcas.html | head -20
           echo ""
-          echo "=== Search for headline patterns ==="
-          curl -s -A "Mozilla/5.0" https://www.dipcas.es/es/actualidad/ | grep -o -i '<h[123][^>]*>.\{0,80\}' | head -10
-
+          echo "=== All og:title occurrences ==="
+          grep -o 'og:title[^>]*' /tmp/dipcas.html | head -20
+          echo ""
+          echo "=== All h3 occurrences (context) ==="
+          grep -o -E '<h[123][^>]*>.{0,120}' /tmp/dipcas.html | head -20
+          echo ""
+          echo "=== Links to posts ==="
+          grep -o -E 'href="[^"]*posts[^"]*"' /tmp/dipcas.html | head -20
+          
       - name: Fetch Castellón news
         run: node castellon.js > castellon.json || echo '[]' > castellon.json
 
