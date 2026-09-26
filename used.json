@@ -76,10 +76,6 @@
     "at": 1790172965435
   },
   {
-    "id": "valencian-proverb-012",
-    "at": 1790173152460
-  },
-  {
     "id": "valencian-proverb-006",
     "at": 1790199052307
   },
@@ -226,5 +222,9 @@
   {
     "id": "quijote-proverb-011",
     "at": 1790439892771
+  },
+  {
+    "id": "valencian-proverb-012",
+    "at": 1790439894037
   }
 ]
