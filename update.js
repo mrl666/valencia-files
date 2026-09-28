@@ -165,7 +165,7 @@ if (regionPool.length >= 1) {
   const htmlList = picks.map(item =>
     `<li>
       <h3><a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.title)}</a></h3>
-      <span class="src">Source: Ayuntamiento de Aspe · ${esc(item.date || '')}</span>
+      <span class="src">Source: ${esc(item.sourceLabel || 'Ajuntament')} · ${esc(item.date || '')}</span>
     </li>`
   ).join('');
   html = replaceById(html, 'region-stories', htmlList);
