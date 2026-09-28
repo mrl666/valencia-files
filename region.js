@@ -1,7 +1,10 @@
 // Scrape Aspe town news via WordPress RSS feed
 // Source: https://aspe.es/feed/
 
-const LIST_URL = 'https://aspe.es/feed/';
+const SOURCES = [
+  { name: 'Aspe',    url: 'https://aspe.es/feed/',         label: 'Ayuntamiento de Aspe' },
+  { name: 'Torrent', url: 'https://www.torrent.es/feed/',  label: 'Ajuntament de Torrent' }
+];
 
 async function run() {
   console.error('region.js starting…');
