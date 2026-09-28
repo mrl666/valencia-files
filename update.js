@@ -29,13 +29,6 @@ const castellonPool = translated.castellon;
 // --- Region pool (translated) ---
 const regionPool = Array.isArray(translated.region) ? translated.region : [];
 
-// --- Load Region pool ---
-let regionPool = [];
-try {
-  regionPool = JSON.parse(fs.readFileSync('region.json', 'utf8'));
-  if (!Array.isArray(regionPool)) regionPool = [];
-} catch (e) { regionPool = []; }
-
 // --- Load weather ---
 let weather = null;
 try {
