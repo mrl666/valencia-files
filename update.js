@@ -26,6 +26,13 @@ const valenciaPool  = translated.valencia;
 const alicantePool  = translated.alicante;
 const castellonPool = translated.castellon;
 
+// --- Load Region pool ---
+let regionPool = [];
+try {
+  regionPool = JSON.parse(fs.readFileSync('region.json', 'utf8'));
+  if (!Array.isArray(regionPool)) regionPool = [];
+} catch (e) { regionPool = []; }
+
 // --- Load weather ---
 let weather = null;
 try {
@@ -154,6 +161,18 @@ if (castellonPool.length >= 1) {
     </li>`
   ).join('');
   html = replaceById(html, 'castellon-stories', htmlList);
+}
+
+// --- Inject Region stories ---
+if (regionPool.length >= 1) {
+  const picks = shuffle(regionPool, seed + 23).slice(0, 4);
+  const htmlList = picks.map(item =>
+    `<li>
+      <h3><a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.title)}</a></h3>
+      <span class="src">Source: Ayuntamiento de Aspe · ${esc(item.date || '')}</span>
+    </li>`
+  ).join('');
+  html = replaceById(html, 'region-stories', htmlList);
 }
 
 // --- Inject thought ---
