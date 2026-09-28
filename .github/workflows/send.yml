@@ -35,26 +35,18 @@ jobs:
 
       - name: Show alicante.json
         run: cat alicante.json
-
-      - name: Dump dipcas list page
-        run: |
-          curl -s -L -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36" \
-            -H "Accept-Language: es-ES,es;q=0.9" \
-            https://www.dipcas.es/es/posts/public/ > /tmp/dipcas-list.html
-          echo "=== Length ==="
-          wc -c /tmp/dipcas-list.html
-          echo "=== Count of og:url ==="
-          grep -c 'og:url' /tmp/dipcas-list.html
-          echo "=== All og:url values ==="
-          grep -o 'og:url" content="[^"]*"' /tmp/dipcas-list.html | head -20
-          echo "=== Links matching /posts/ ==="
-          grep -o -E 'href="[^"]*posts[^"]*"' /tmp/dipcas-list.html | sort -u | head -20
           
       - name: Fetch Castellón news
         run: node castellon.js > castellon.json || echo '[]' > castellon.json
 
       - name: Show castellon.json
         run: cat castellon.json
+
+      - name: Fetch Region news
+        run: node region.js > region.json || echo '[]' > region.json
+
+      - name: Show region.json
+        run: cat region.json
 
       - name: Translate headlines
         env:
