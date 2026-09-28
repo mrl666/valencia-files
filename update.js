@@ -14,7 +14,8 @@ try {
       lead: parsed.lead || null,
       valencia: Array.isArray(parsed.valencia) ? parsed.valencia : [],
       alicante: Array.isArray(parsed.alicante) ? parsed.alicante : [],
-      castellon: Array.isArray(parsed.castellon) ? parsed.castellon : []
+      castellon: Array.isArray(parsed.castellon) ? parsed.castellon : [],
+      region: Array.isArray(parsed.region) ? parsed.region : []
     };
   }
 } catch (e) {
@@ -25,6 +26,8 @@ const leadNews      = translated.lead;
 const valenciaPool  = translated.valencia;
 const alicantePool  = translated.alicante;
 const castellonPool = translated.castellon;
+// --- Region pool (translated) ---
+const regionPool = Array.isArray(translated.region) ? translated.region : [];
 
 // --- Load Region pool ---
 let regionPool = [];
