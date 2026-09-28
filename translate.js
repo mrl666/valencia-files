@@ -16,6 +16,7 @@ const lead = loadJson('lead.json');
 const valencia = loadJson('valencia.json') || [];
 const alicante = loadJson('alicante.json') || [];
 const castellon = loadJson('castellon.json') || [];
+const region = loadJson('region.json') || [];
 
 // --- Load translation cache ---
 let cache = {};
@@ -42,6 +43,7 @@ if (lead && lead.title) {
 collect(valencia);
 collect(alicante);
 collect(castellon);
+collect(region);
 
 const uniqueHeadlines = Array.from(toTranslate);
 
@@ -99,7 +101,8 @@ async function run() {
     lead: lead ? applyTranslation(lead) : null,
     valencia: valencia.map(applyTranslation),
     alicante: alicante.map(applyTranslation),
-    castellon: castellon.map(applyTranslation)
+    castellon: castellon.map(applyTranslation),
+    region: region.map(applyTranslation)
   };
 
   console.log(JSON.stringify(output));
