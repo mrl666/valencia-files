@@ -56,60 +56,52 @@ async function fetchHtmlSource(source) {
     }
   }
 
-  if (source.name === 'Xàtiva' || source.name === 'Xativa') {
+ if (source.name === 'Xàtiva' || source.name === 'Xativa') {
   console.error('Xativa branch entered, HTML length:', html.length);
+
+  // Count candidate links and dates in the HTML
+  const allLinks = [...html.matchAll(/href="([^"]*\/noticia\/[^"]+)"/g)];
+  console.error('  links matching /noticia/ :', allLinks.length);
+  if (allLinks.length > 0) console.error('  first link:', allLinks[0][1]);
+
+  const allDates = [...html.matchAll(/datetime="(\d{4}-\d{2}-\d{2})/g)];
+  console.error('  dates matching datetime= :', allDates.length);
+  if (allDates.length > 0) console.error('  first date:', allDates[0][1]);
+
+  // Full pattern — same as before but with wider window
   const linkRe = /<a[^>]+href="(\/[^"]*\/noticia\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
   let m;
+  let candidates = 0;
   while ((m = linkRe.exec(html)) !== null) {
     const url = m[1];
     if (seen.has(url)) continue;
+    candidates++;
+
     const title = m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-    if (!title || title.length < 12) continue;
+    if (!title || title.length < 12) {
+      console.error('  skipped (short title):', JSON.stringify(title.slice(0, 40)));
+      continue;
+    }
+
     const start = Math.max(0, m.index - 1500);
     const before = html.slice(start, m.index);
     const dateMatches = [...before.matchAll(/datetime="(\d{4}-\d{2}-\d{2})/g)];
     const date = dateMatches.length ? dateMatches[dateMatches.length - 1][1] : '';
+
     const id = `xativa-${url.split('/').filter(Boolean).pop()}`;
-    seen.add(url);
-    items.push({ id, title, url: 'https://www.xativa.es' + url, date, town: 'Xàtiva', sourceLabel: source.label });
-  }
-  console.error(`  → Xativa: ${items.length} items extracted from HTML`);
-}
-
-if (source.name === 'Xàtiva' || source.name === 'Xativa') {
-  console.log('Xàtiva 2');
-  // Anchor on article links, then find the date preceding each one.
-  const linkRe = /<a[^>]+href="(\/[^"]*\/noticia\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
-  let m;
-  while ((m = linkRe.exec(html)) !== null) {
-    const url = m[1];
-    if (seen.has(url)) continue;
-
-    const title = m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-    if (!title || title.length < 12) continue;
-
-    // Look backwards up to 1500 chars before this link for the nearest date
-    const start = Math.max(0, m.index - 1500);
-    const before = html.slice(start, m.index);
-    const dateMatches = [...before.matchAll(/datetime="(\d{4}-\d{2}-\d{2})/g)];
-    const date = dateMatches.length ? dateMatches[dateMatches.length - 1][1] : '';
-
-    const id = `${source.name.toLowerCase()}-${url.split('/').filter(Boolean).pop()}`;
     seen.add(url);
     items.push({
       id,
       title,
       url: 'https://www.xativa.es' + url,
       date,
-      town: source.name,
+      town: 'Xàtiva',
       sourceLabel: source.label
     });
   }
+  console.error('  candidates processed:', candidates);
+  console.error('  → Xativa: ' + items.length + ' total items (incl. from other sources)');
 }
-
-  return items;
-}
-
 async function fetchFeed(source) {
   const res = await fetch(source.url, {
     headers: {
