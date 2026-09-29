@@ -20,9 +20,8 @@ const HTML_MONTHS = {
   julio:'07', agosto:'08', septiembre:'09', octubre:'10', noviembre:'11', diciembre:'12'
 };
 
-console.error(`fetchHtmlSource: ${source.name} (length ${source.name.length}, codes ${[...source.name].map(c => c.charCodeAt(0)).join(',')})`);
-
 async function fetchHtmlSource(source) {
+  console.error(`fetchHtmlSource: ${source.name} (length ${source.name.length}, codes ${[...source.name].map(c => c.charCodeAt(0)).join(',')})`);
   const res = await fetch(source.url, {
     headers: {
       'User-Agent': 'Mozilla/5.0 (compatible; ValenciaFiles/1.0; +https://github.com/mrl666/valencia-files)',
