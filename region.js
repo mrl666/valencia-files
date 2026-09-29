@@ -1,16 +1,19 @@
-// Region scraper — combines multiple town RSS feeds into one pool.
+// Region scraper — combines multiple town RSS feeds and HTML news pages into one pool.
 // Sources (all official council websites, reusable under Law 37/2007):
-//   - Aspe:    https://aspe.es/feed/
-//   - Torrent: https://www.torrent.es/feed/
-//   - Alzira:  https://www.alzira.es/feed/
+//   - Aspe     https://aspe.es/feed/
+//   - Torrent  https://www.torrent.es/feed/
+//   - Alzira   https://www.alzira.es/feed/
+//   - Novelda  https://www.novelda.es/feed/
+//   - Sagunt   https://aytosagunto.es/va/actualitat/
+//   - Xàtiva   https://www.xativa.es/es/noticias
 
 const SOURCES = [
-  { name: 'Aspe',    url: 'https://aspe.es/feed/',         label: 'Ayuntamiento de Aspe',   type: 'rss' },
-  { name: 'Torrent', url: 'https://www.torrent.es/feed/',  label: 'Ajuntament de Torrent',  type: 'rss' },
-  { name: 'Alzira',  url: 'https://www.alzira.es/feed/',   label: 'Ajuntament d\'Alzira',   type: 'rss' },
-  { name: 'Sagunt',  url: 'https://aytosagunto.es/va/actualitat/', label: 'Ajuntament de Sagunt', type: 'html' },
-  { name: 'Novelda', url: 'https://www.novelda.es/feed/', label: 'Ajuntament de Novelda', type: 'rss' },
-  { name: 'Xativa', display: 'Xàtiva', url: 'https://www.xativa.es/es/noticias', label: 'Ajuntament de Xàtiva', type: 'html' }
+  { name: 'Aspe',    url: 'https://aspe.es/feed/',                 label: 'Ayuntamiento de Aspe',   type: 'rss'  },
+  { name: 'Torrent', url: 'https://www.torrent.es/feed/',          label: 'Ajuntament de Torrent',  type: 'rss'  },
+  { name: 'Alzira',  url: 'https://www.alzira.es/feed/',           label: 'Ajuntament d\'Alzira',   type: 'rss'  },
+  { name: 'Novelda', url: 'https://www.novelda.es/feed/',          label: 'Ajuntament de Novelda',  type: 'rss'  },
+  { name: 'Sagunt',  url: 'https://aytosagunto.es/va/actualitat/', label: 'Ajuntament de Sagunt',   type: 'html' },
+  { name: 'Xativa',  url: 'https://www.xativa.es/es/noticias',     label: 'Ajuntament de Xàtiva',   type: 'html' }
 ];
 
 const HTML_MONTHS = {
@@ -21,7 +24,7 @@ const HTML_MONTHS = {
 };
 
 async function fetchHtmlSource(source) {
-  console.error(`fetchHtmlSource: ${source.name} (length ${source.name.length}, codes ${[...source.name].map(c => c.charCodeAt(0)).join(',')})`);
+  console.error(`fetchHtmlSource: ${source.name}`);
   const res = await fetch(source.url, {
     headers: {
       'User-Agent': 'Mozilla/5.0 (compatible; ValenciaFiles/1.0; +https://github.com/mrl666/valencia-files)',
@@ -36,7 +39,7 @@ async function fetchHtmlSource(source) {
   const items = [];
   const seen = new Set();
 
-  // --- Sagunt pattern: <h3 class="h5"><a href="/va/actualitat/...">TITLE</a></h3> ... <div class="box__meta">DD de mes YYYY</div>
+  // --- Sagunt: <h3 class="h5"><a href="/va/actualitat/...">TITLE</a></h3> ... <div class="box__meta">DD de mes YYYY</div>
   if (source.name === 'Sagunt') {
     const re = /<h3[^>]*class="h5"[^>]*>\s*<a[^>]+href="(\/[^"]*\/actualitat\/[^"]+)"[^>]*>([\s\S]*?)<\/a>\s*<\/h3>[\s\S]{0,500}?<div[^>]*class="box__meta"[^>]*>\s*(\d{1,2})\s+de\s+([a-zàéíóúç]+)\s+(\d{4})/gi;
     let m;
@@ -50,58 +53,50 @@ async function fetchHtmlSource(source) {
       const year = m[5];
       if (!month) continue;
       const date = `${year}-${month}-${day}`;
-      const id = `${source.name.toLowerCase()}-${url.split('/').filter(Boolean).pop()}`;
+      const id = `sagunt-${url.split('/').filter(Boolean).pop()}`;
       seen.add(url);
-      items.push({ id, title, url: 'https://aytosagunto.es' + url, date, town: source.name, sourceLabel: source.label });
+      items.push({
+        id, title,
+        url: 'https://aytosagunto.es' + url,
+        date,
+        town: 'Sagunt',
+        sourceLabel: source.label
+      });
     }
+    console.error(`  Sagunt: ${items.length} items`);
   }
 
- if (source.name === 'Xàtiva' || source.name === 'Xativa') {
-  console.error('Xativa branch entered, HTML length:', html.length);
+  // --- Xàtiva: anchor on /noticia/ links, then look backwards for the nearest <time datetime>
+  if (source.name === 'Xativa') {
+    const linkRe = /<a[^>]+href="(\/[^"]*\/noticia\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
+    let m;
+    while ((m = linkRe.exec(html)) !== null) {
+      const url = m[1];
+      if (seen.has(url)) continue;
+      const title = m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+      if (!title || title.length < 12) continue;
 
-  // Count candidate links and dates in the HTML
-  const allLinks = [...html.matchAll(/href="([^"]*\/noticia\/[^"]+)"/g)];
-  console.error('  links matching /noticia/ :', allLinks.length);
-  if (allLinks.length > 0) console.error('  first link:', allLinks[0][1]);
+      const start = Math.max(0, m.index - 1500);
+      const before = html.slice(start, m.index);
+      const dateMatches = [...before.matchAll(/datetime="(\d{4}-\d{2}-\d{2})/g)];
+      const date = dateMatches.length ? dateMatches[dateMatches.length - 1][1] : '';
 
-  const allDates = [...html.matchAll(/datetime="(\d{4}-\d{2}-\d{2})/g)];
-  console.error('  dates matching datetime= :', allDates.length);
-  if (allDates.length > 0) console.error('  first date:', allDates[0][1]);
-
-  // Full pattern — same as before but with wider window
-  const linkRe = /<a[^>]+href="(\/[^"]*\/noticia\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
-  let m;
-  let candidates = 0;
-  while ((m = linkRe.exec(html)) !== null) {
-    const url = m[1];
-    if (seen.has(url)) continue;
-    candidates++;
-
-    const title = m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-    if (!title || title.length < 12) {
-      console.error('  skipped (short title):', JSON.stringify(title.slice(0, 40)));
-      continue;
+      const id = `xativa-${url.split('/').filter(Boolean).pop()}`;
+      seen.add(url);
+      items.push({
+        id, title,
+        url: 'https://www.xativa.es' + url,
+        date,
+        town: 'Xàtiva',
+        sourceLabel: source.label
+      });
     }
-
-    const start = Math.max(0, m.index - 1500);
-    const before = html.slice(start, m.index);
-    const dateMatches = [...before.matchAll(/datetime="(\d{4}-\d{2}-\d{2})/g)];
-    const date = dateMatches.length ? dateMatches[dateMatches.length - 1][1] : '';
-
-    const id = `xativa-${url.split('/').filter(Boolean).pop()}`;
-    seen.add(url);
-    items.push({
-      id,
-      title,
-      url: 'https://www.xativa.es' + url,
-      date,
-      town: 'Xàtiva',
-      sourceLabel: source.label
-    });
+    console.error(`  Xativa: ${items.length} items`);
   }
-  console.error('  candidates processed:', candidates);
-  console.error('  → Xativa: ' + items.length + ' total items (incl. from other sources)');
+
+  return items;
 }
+
 async function fetchFeed(source) {
   const res = await fetch(source.url, {
     headers: {
@@ -120,11 +115,9 @@ async function fetchFeed(source) {
   let m;
   while ((m = itemRe.exec(xml)) !== null) {
     const block = m[1];
-
     const titleMatch = block.match(/<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/);
     const linkMatch  = block.match(/<link>([\s\S]*?)<\/link>/);
     const dateMatch  = block.match(/<pubDate>([\s\S]*?)<\/pubDate>/);
-
     if (!titleMatch || !linkMatch) continue;
 
     const title = titleMatch[1]
@@ -147,17 +140,10 @@ async function fetchFeed(source) {
 
     const id = `${source.name.toLowerCase()}-${url.split('/').filter(Boolean).pop() || url}`;
     seen.add(url);
-    items.push({
-      id,
-      title,
-      url,
-      date,
-      town: source.name,
-      sourceLabel: source.label
-    });
+    items.push({ id, title, url, date, town: source.name, sourceLabel: source.label });
   }
 
-  console.error(`${source.name}: ${items.length} items`);
+  console.error(`  ${source.name}: ${items.length} items`);
   return items;
 }
 
@@ -177,7 +163,7 @@ async function run() {
   }
 
   all.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  const pool = all.slice(0, 40);
+  const pool = all.slice(0, 80);
 
   console.error(`region.js extracted ${pool.length} items total`);
   console.log(JSON.stringify(pool));
