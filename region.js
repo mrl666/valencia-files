@@ -56,6 +56,26 @@ async function fetchHtmlSource(source) {
     }
   }
 
+  if (source.name === 'Xativa') {
+  console.error('Xativa branch entered, HTML length:', html.length);
+  const linkRe = /<a[^>]+href="(\/[^"]*\/noticia\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
+  let m;
+  while ((m = linkRe.exec(html)) !== null) {
+    const url = m[1];
+    if (seen.has(url)) continue;
+    const title = m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    if (!title || title.length < 12) continue;
+    const start = Math.max(0, m.index - 1500);
+    const before = html.slice(start, m.index);
+    const dateMatches = [...before.matchAll(/datetime="(\d{4}-\d{2}-\d{2})/g)];
+    const date = dateMatches.length ? dateMatches[dateMatches.length - 1][1] : '';
+    const id = `xativa-${url.split('/').filter(Boolean).pop()}`;
+    seen.add(url);
+    items.push({ id, title, url: 'https://www.xativa.es' + url, date, town: 'Xàtiva', sourceLabel: source.label });
+  }
+  console.error(`  → Xativa: ${items.length} items extracted from HTML`);
+}
+
 if (source.name === 'Xàtiva') {
   // Anchor on article links, then find the date preceding each one.
   const linkRe = /<a[^>]+href="(\/[^"]*\/noticia\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
