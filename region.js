@@ -56,8 +56,7 @@ async function fetchHtmlSource(source) {
     }
   }
 
-  if (source.name === 'Xativa') {
-     console.log('Xàtiva 1');
+  if (source.name === 'Xàtiva' || source.name === 'Xativa') {
   console.error('Xativa branch entered, HTML length:', html.length);
   const linkRe = /<a[^>]+href="(\/[^"]*\/noticia\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
   let m;
@@ -77,7 +76,7 @@ async function fetchHtmlSource(source) {
   console.error(`  → Xativa: ${items.length} items extracted from HTML`);
 }
 
-if (source.name === 'Xàtiva') {
+if (source.name === 'Xàtiva' || source.name === 'Xativa') {
   console.log('Xàtiva 2');
   // Anchor on article links, then find the date preceding each one.
   const linkRe = /<a[^>]+href="(\/[^"]*\/noticia\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
