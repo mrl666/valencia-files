@@ -10,7 +10,7 @@ const SOURCES = [
   { name: 'Alzira',  url: 'https://www.alzira.es/feed/',   label: 'Ajuntament d\'Alzira',   type: 'rss' },
   { name: 'Sagunt',  url: 'https://aytosagunto.es/va/actualitat/', label: 'Ajuntament de Sagunt', type: 'html' },
   { name: 'Novelda', url: 'https://www.novelda.es/feed/', label: 'Ajuntament de Novelda', type: 'rss' },
-  { name: 'Xàtiva',  url: 'https://www.xativa.es/es/noticias', label: 'Ajuntament de Xàtiva', type: 'html' }
+  { name: 'Xativa', display: 'Xàtiva', url: 'https://www.xativa.es/es/noticias', label: 'Ajuntament de Xàtiva', type: 'html' }
 ];
 
 const HTML_MONTHS = {
@@ -57,6 +57,7 @@ async function fetchHtmlSource(source) {
   }
 
   if (source.name === 'Xativa') {
+     console.log('Xàtiva 1');
   console.error('Xativa branch entered, HTML length:', html.length);
   const linkRe = /<a[^>]+href="(\/[^"]*\/noticia\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
   let m;
@@ -77,6 +78,7 @@ async function fetchHtmlSource(source) {
 }
 
 if (source.name === 'Xàtiva') {
+  console.log('Xàtiva 2');
   // Anchor on article links, then find the date preceding each one.
   const linkRe = /<a[^>]+href="(\/[^"]*\/noticia\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
   let m;
