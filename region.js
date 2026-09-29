@@ -5,10 +5,65 @@
 //   - Alzira:  https://www.alzira.es/feed/
 
 const SOURCES = [
-  { name: 'Aspe',    url: 'https://aspe.es/feed/',        label: 'Ayuntamiento de Aspe' },
-  { name: 'Torrent', url: 'https://www.torrent.es/feed/', label: 'Ajuntament de Torrent' },
-  { name: 'Alzira',  url: 'https://www.alzira.es/feed/',  label: 'Ajuntament d\'Alzira' }
+  { name: 'Aspe',    url: 'https://aspe.es/feed/',         label: 'Ayuntamiento de Aspe',   type: 'rss' },
+  { name: 'Torrent', url: 'https://www.torrent.es/feed/',  label: 'Ajuntament de Torrent',  type: 'rss' },
+  { name: 'Alzira',  url: 'https://www.alzira.es/feed/',   label: 'Ajuntament d\'Alzira',   type: 'rss' },
+  { name: 'Sagunt',  url: 'https://aytosagunto.es/va/actualitat/', label: 'Ajuntament de Sagunt', type: 'html' }
 ];
+
+const HTML_MONTHS = {
+  gener:'01', febrer:'02', març:'03', abril:'04', maig:'05', juny:'06',
+  juliol:'07', agost:'08', setembre:'09', octubre:'10', novembre:'11', desembre:'12',
+  enero:'01', febrero:'02', marzo:'03', abril:'04', mayo:'05', junio:'06',
+  julio:'07', agosto:'08', septiembre:'09', octubre:'10', noviembre:'11', diciembre:'12'
+};
+
+async function fetchHtmlSource(source) {
+  const res = await fetch(source.url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (compatible; ValenciaFiles/1.0; +https://github.com/mrl666/valencia-files)',
+      'Accept': 'text/html,application/xhtml+xml',
+      'Accept-Language': 'ca-ES,es;q=0.9,en;q=0.8'
+    },
+    redirect: 'follow'
+  });
+  if (!res.ok) throw new Error(`${source.name} HTTP ${res.status}`);
+  const html = await res.text();
+
+  const items = [];
+  const seen = new Set();
+
+  // Sagunt pattern: <h3 class="h5"><a href="/va/actualitat/...">TITLE</a></h3> ... <div class="box__meta"> DD de mes YYYY </div>
+  const re = /<h3[^>]*class="h5"[^>]*>\s*<a[^>]+href="(\/[^"]*\/actualitat\/[^"]+)"[^>]*>([\s\S]*?)<\/a>\s*<\/h3>[\s\S]{0,500}?<div[^>]*class="box__meta"[^>]*>\s*(\d{1,2})\s+de\s+([a-zàéíóúç]+)\s+(\d{4})/gi;
+
+  let m;
+  while ((m = re.exec(html)) !== null) {
+    const url = m[1];
+    if (seen.has(url)) continue;
+
+    const title = m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    if (!title || title.length < 12) continue;
+
+    const day = String(m[3]).padStart(2, '0');
+    const month = HTML_MONTHS[m[4].toLowerCase()];
+    const year = m[5];
+    if (!month) continue;
+
+    const date = `${year}-${month}-${day}`;
+    const id = `${source.name.toLowerCase()}-${url.split('/').filter(Boolean).pop()}`;
+    seen.add(url);
+    items.push({
+      id,
+      title,
+      url: url.startsWith('http') ? url : 'https://aytosagunto.es' + url,
+      date,
+      town: source.name,
+      sourceLabel: source.label
+    });
+  }
+
+  return items;
+}
 
 async function fetchFeed(source) {
   const res = await fetch(source.url, {
@@ -75,16 +130,17 @@ async function run() {
   const all = [];
   for (const source of SOURCES) {
     try {
-      const items = await fetchFeed(source);
+      const items = source.type === 'html'
+        ? await fetchHtmlSource(source)
+        : await fetchFeed(source);
       all.push(...items);
     } catch (e) {
       console.error(`Skipping ${source.name}: ${e.message}`);
     }
   }
 
-  // Cap the pool at 30 items total, newest first
   all.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  const pool = all.slice(0, 30);
+  const pool = all.slice(0, 40);
 
   console.error(`region.js extracted ${pool.length} items total`);
   console.log(JSON.stringify(pool));
