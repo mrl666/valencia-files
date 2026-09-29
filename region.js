@@ -20,6 +20,8 @@ const HTML_MONTHS = {
   julio:'07', agosto:'08', septiembre:'09', octubre:'10', noviembre:'11', diciembre:'12'
 };
 
+console.error(`fetchHtmlSource: ${source.name} (length ${source.name.length}, codes ${[...source.name].map(c => c.charCodeAt(0)).join(',')})`);
+
 async function fetchHtmlSource(source) {
   const res = await fetch(source.url, {
     headers: {
@@ -54,6 +56,14 @@ async function fetchHtmlSource(source) {
       items.push({ id, title, url: 'https://aytosagunto.es' + url, date, town: source.name, sourceLabel: source.label });
     }
   }
+
+  if (source.name === 'Xàtiva') {
+  console.error('Xàtiva branch entered, HTML length:', html.length);
+  const testMatch = html.match(/datetime="(\d{4}-\d{2}-\d{2})/);
+  console.error('First date match:', testMatch ? testMatch[1] : 'NONE');
+  const testLink = html.match(/href="(\/[^"]*\/noticia\/[^"]+)"/);
+  console.error('First noticia link:', testLink ? testLink[1] : 'NONE');
+}
 
   // --- Xàtiva pattern: <time datetime="YYYY-MM-DD..."> ... </time> ... <a href="/es/.../noticia/...">TITLE</a>
   if (source.name === 'Xàtiva') {
