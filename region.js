@@ -56,29 +56,35 @@ async function fetchHtmlSource(source) {
     }
   }
 
-  if (source.name === 'Xàtiva') {
-  console.error('Xàtiva branch entered, HTML length:', html.length);
-  const testMatch = html.match(/datetime="(\d{4}-\d{2}-\d{2})/);
-  console.error('First date match:', testMatch ? testMatch[1] : 'NONE');
-  const testLink = html.match(/href="(\/[^"]*\/noticia\/[^"]+)"/);
-  console.error('First noticia link:', testLink ? testLink[1] : 'NONE');
-}
+if (source.name === 'Xàtiva') {
+  // Anchor on article links, then find the date preceding each one.
+  const linkRe = /<a[^>]+href="(\/[^"]*\/noticia\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
+  let m;
+  while ((m = linkRe.exec(html)) !== null) {
+    const url = m[1];
+    if (seen.has(url)) continue;
 
-  // --- Xàtiva pattern: <time datetime="YYYY-MM-DD..."> ... </time> ... <a href="/es/.../noticia/...">TITLE</a>
-  if (source.name === 'Xàtiva') {
-    const re = /<time[^>]+datetime="(\d{4}-\d{2}-\d{2})[^"]*"[^>]*>[\s\S]*?<\/time>[\s\S]{0,800}?<a[^>]+href="(\/[^"]*\/noticia\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
-    let m;
-    while ((m = re.exec(html)) !== null) {
-      const date = m[1];
-      const url = m[2];
-      if (seen.has(url)) continue;
-      const title = m[3].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-      if (!title || title.length < 12) continue;
-      const id = `${source.name.toLowerCase()}-${url.split('/').filter(Boolean).pop()}`;
-      seen.add(url);
-      items.push({ id, title, url: 'https://www.xativa.es' + url, date, town: source.name, sourceLabel: source.label });
-    }
+    const title = m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    if (!title || title.length < 12) continue;
+
+    // Look backwards up to 1500 chars before this link for the nearest date
+    const start = Math.max(0, m.index - 1500);
+    const before = html.slice(start, m.index);
+    const dateMatches = [...before.matchAll(/datetime="(\d{4}-\d{2}-\d{2})/g)];
+    const date = dateMatches.length ? dateMatches[dateMatches.length - 1][1] : '';
+
+    const id = `${source.name.toLowerCase()}-${url.split('/').filter(Boolean).pop()}`;
+    seen.add(url);
+    items.push({
+      id,
+      title,
+      url: 'https://www.xativa.es' + url,
+      date,
+      town: source.name,
+      sourceLabel: source.label
+    });
   }
+}
 
   return items;
 }
