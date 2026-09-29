@@ -8,7 +8,9 @@ const SOURCES = [
   { name: 'Aspe',    url: 'https://aspe.es/feed/',         label: 'Ayuntamiento de Aspe',   type: 'rss' },
   { name: 'Torrent', url: 'https://www.torrent.es/feed/',  label: 'Ajuntament de Torrent',  type: 'rss' },
   { name: 'Alzira',  url: 'https://www.alzira.es/feed/',   label: 'Ajuntament d\'Alzira',   type: 'rss' },
-  { name: 'Sagunt',  url: 'https://aytosagunto.es/va/actualitat/', label: 'Ajuntament de Sagunt', type: 'html' }
+  { name: 'Sagunt',  url: 'https://aytosagunto.es/va/actualitat/', label: 'Ajuntament de Sagunt', type: 'html' },
+  { name: 'Novelda', url: 'https://www.novelda.es/feed/', label: 'Ajuntament de Novelda', type: 'rss' },
+  { name: 'Xàtiva',  url: 'https://www.xativa.es/es/noticias', label: 'Ajuntament de Xàtiva', type: 'html' }
 ];
 
 const HTML_MONTHS = {
@@ -33,33 +35,40 @@ async function fetchHtmlSource(source) {
   const items = [];
   const seen = new Set();
 
-  // Sagunt pattern: <h3 class="h5"><a href="/va/actualitat/...">TITLE</a></h3> ... <div class="box__meta"> DD de mes YYYY </div>
-  const re = /<h3[^>]*class="h5"[^>]*>\s*<a[^>]+href="(\/[^"]*\/actualitat\/[^"]+)"[^>]*>([\s\S]*?)<\/a>\s*<\/h3>[\s\S]{0,500}?<div[^>]*class="box__meta"[^>]*>\s*(\d{1,2})\s+de\s+([a-zàéíóúç]+)\s+(\d{4})/gi;
+  // --- Sagunt pattern: <h3 class="h5"><a href="/va/actualitat/...">TITLE</a></h3> ... <div class="box__meta">DD de mes YYYY</div>
+  if (source.name === 'Sagunt') {
+    const re = /<h3[^>]*class="h5"[^>]*>\s*<a[^>]+href="(\/[^"]*\/actualitat\/[^"]+)"[^>]*>([\s\S]*?)<\/a>\s*<\/h3>[\s\S]{0,500}?<div[^>]*class="box__meta"[^>]*>\s*(\d{1,2})\s+de\s+([a-zàéíóúç]+)\s+(\d{4})/gi;
+    let m;
+    while ((m = re.exec(html)) !== null) {
+      const url = m[1];
+      if (seen.has(url)) continue;
+      const title = m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+      if (!title || title.length < 12) continue;
+      const day = String(m[3]).padStart(2, '0');
+      const month = HTML_MONTHS[m[4].toLowerCase()];
+      const year = m[5];
+      if (!month) continue;
+      const date = `${year}-${month}-${day}`;
+      const id = `${source.name.toLowerCase()}-${url.split('/').filter(Boolean).pop()}`;
+      seen.add(url);
+      items.push({ id, title, url: 'https://aytosagunto.es' + url, date, town: source.name, sourceLabel: source.label });
+    }
+  }
 
-  let m;
-  while ((m = re.exec(html)) !== null) {
-    const url = m[1];
-    if (seen.has(url)) continue;
-
-    const title = m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-    if (!title || title.length < 12) continue;
-
-    const day = String(m[3]).padStart(2, '0');
-    const month = HTML_MONTHS[m[4].toLowerCase()];
-    const year = m[5];
-    if (!month) continue;
-
-    const date = `${year}-${month}-${day}`;
-    const id = `${source.name.toLowerCase()}-${url.split('/').filter(Boolean).pop()}`;
-    seen.add(url);
-    items.push({
-      id,
-      title,
-      url: url.startsWith('http') ? url : 'https://aytosagunto.es' + url,
-      date,
-      town: source.name,
-      sourceLabel: source.label
-    });
+  // --- Xàtiva pattern: <time datetime="YYYY-MM-DD..."> ... </time> ... <a href="/es/.../noticia/...">TITLE</a>
+  if (source.name === 'Xàtiva') {
+    const re = /<time[^>]+datetime="(\d{4}-\d{2}-\d{2})[^"]*"[^>]*>[\s\S]*?<\/time>[\s\S]{0,800}?<a[^>]+href="(\/[^"]*\/noticia\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
+    let m;
+    while ((m = re.exec(html)) !== null) {
+      const date = m[1];
+      const url = m[2];
+      if (seen.has(url)) continue;
+      const title = m[3].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+      if (!title || title.length < 12) continue;
+      const id = `${source.name.toLowerCase()}-${url.split('/').filter(Boolean).pop()}`;
+      seen.add(url);
+      items.push({ id, title, url: 'https://www.xativa.es' + url, date, town: source.name, sourceLabel: source.label });
+    }
   }
 
   return items;
