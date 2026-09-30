@@ -25,21 +25,21 @@ const SOURCES = [
   },
   {
     name: 'Council of Europe',
-    url: 'https://www.coe.int/en/web/portal/news',
-    label: 'Council of Europe',
+    url: 'https://www.coe.int/en/web/cultural-routes/news-2026',
+    label: 'Council of Europe — Cultural Routes',
     terms: ['valencia', 'valencian', 'valenciana']
+  },
+  {
+    name: 'EEAS',
+    url: 'https://www.eeas.europa.eu/eeas/news_en',
+    label: 'European External Action Service',
+    terms: ['valencia', 'valencian', 'marines', 'bétera']
   },
   {
     name: 'EU Digital Strategy',
     url: 'https://digital-strategy.ec.europa.eu/en/news',
     label: 'European Commission — Digital Strategy',
     terms: ['valencia', 'valencian']
-  },
-  {
-    name: 'EEAS',
-    url: 'https://www.eeas.europa.eu/eeas/news_en',
-    label: 'European External Action Service',
-    terms: ['valencia', 'valencian', 'marines']
   }
 ];
 
