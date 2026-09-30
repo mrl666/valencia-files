@@ -53,6 +53,12 @@ jobs:
           DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
         run: node translate.js > translated.json
 
+      - name: Fetch International view
+        run: node international.js > international.json || echo '[]' > international.json
+
+      - name: Show international.json
+        run: cat international.json
+
       - name: Update index.html
         run: node update.js
 
