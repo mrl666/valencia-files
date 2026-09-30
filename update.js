@@ -225,5 +225,10 @@ if (internationalNews.length > 0) {
 html = html.replace(/<span id="edition">[^<]*<\/span>/,
   `<span id="edition">Updated ${stamp}</span>`);
 
+console.error('── DIAGNOSTIC ──');
+console.error('internationalNews.length:', internationalNews.length);
+console.error('internationalNews[0]:', JSON.stringify(internationalNews[0] || null).slice(0, 200));
+console.error('block in HTML:', html.indexOf('id="international-view"') > -1);
+
 fs.writeFileSync(file, html);
 console.log('Updated index.html at', stamp);
