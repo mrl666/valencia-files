@@ -36,6 +36,13 @@ try {
   if (!Array.isArray(weather) || weather.length !== 3) weather = null;
 } catch (e) { weather = null; }
 
+// --- Load International view ---
+let internationalNews = [];
+try {
+  internationalNews = JSON.parse(fs.readFileSync('international.json', 'utf8'));
+  if (!Array.isArray(internationalNews)) internationalNews = [];
+} catch (e) { internationalNews = []; }
+
 // --- Load used-news ---
 let usedNews = [];
 try {
@@ -196,6 +203,26 @@ if (weather) {
      <div class="weather-cities">${weather.map(buildCity).join('')}</div>
      <div class="source-note">Source: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a></div>`
   );
+}
+
+// --- Inject International view ---
+if (internationalNews.length > 0) {
+  const item = internationalNews[0];
+  const block = html.match(/<div class="international-view"[\s\S]*?<\/div>\s*<\/div>/);
+  if (block) {
+    html = html.replace(
+      /<h3[^>]*id="international-title"[^>]*>[\s\S]*?<\/h3>/,
+      `<h3 style="margin:0 0 6px; font-size:17px; line-height:1.3;" id="international-title"><a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.title)}</a></h3>`
+    );
+    html = html.replace(
+      /<div class="source-note" id="international-source">[\s\S]*?<\/div>/,
+      `<div class="source-note" id="international-source">Source: ${esc(item.sourceLabel)} · ${esc(item.date || '')}</div>`
+    );
+    html = html.replace(
+      /<div class="international-view" id="international-view" style="display:none;/,
+      `<div class="international-view" id="international-view" style="display:block;`
+    );
+  }
 }
 
 // --- Edition stamp ---
