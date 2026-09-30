@@ -6,10 +6,10 @@
 const BASE = 'https://raw.githubusercontent.com/openfootball/football.json/master/2026-27';
 
 const TEAMS = [
-  { id: 'valencia',   name: 'Valencia',   dataset: 'es.1' },
-  { id: 'villarreal', name: 'Villarreal', dataset: 'es.1' },
-  { id: 'levante',    name: 'Levante',    dataset: 'es.1' },
-  { id: 'castellon',  name: 'Castellón',  dataset: 'es.2' }
+  { id: 'valencia',   name: 'Valencia CF',   dataset: 'es.1' },
+  { id: 'villarreal', name: 'Villarreal CF', dataset: 'es.1' },
+  { id: 'levante',    name: 'Levante UD',    dataset: 'es.1' },
+  { id: 'castellon',  name: 'Castellón',     dataset: 'es.2' }
 ];
 
 async function fetchDataset(code) {
