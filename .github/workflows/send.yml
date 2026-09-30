@@ -26,38 +26,33 @@ jobs:
 
       - name: Fetch Valencia news
         run: node valencia.js > valencia.json || echo '[]' > valencia.json
-
       - name: Show valencia.json
         run: cat valencia.json
 
       - name: Fetch Alicante news
         run: node alicante.js > alicante.json || echo '[]' > alicante.json
-
       - name: Show alicante.json
         run: cat alicante.json
-          
+
       - name: Fetch Castellón news
         run: node castellon.js > castellon.json || echo '[]' > castellon.json
-
       - name: Show castellon.json
         run: cat castellon.json
 
       - name: Fetch Region news
         run: node region.js > region.json || echo '[]' > region.json
-
       - name: Show region.json
         run: cat region.json
+
+      - name: Fetch International view
+        run: node international.js > international.json || echo '[]' > international.json
+      - name: Show international.json
+        run: cat international.json
 
       - name: Translate headlines
         env:
           DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
         run: node translate.js > translated.json
-
-      - name: Fetch International view
-        run: node international.js > international.json || echo '[]' > international.json
-
-      - name: Show international.json
-        run: cat international.json
 
       - name: Update index.html
         run: node update.js
@@ -66,12 +61,9 @@ jobs:
         run: |
           git config user.name "valencia-files-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add index.html used.json used-news.json lead.json translated.json translations-cache.json international.json
+          git add index.html used.json used-news.json lead.json translated.json translations-cache.json international.json region.json castellon.json
           git commit -m "Edition update $(date -u +'%Y-%m-%dT%H:%M')" || echo "No changes"
           git push
-
-      - name: Update index.html
-        run: node update.js
 
       - name: Send email
         env:
