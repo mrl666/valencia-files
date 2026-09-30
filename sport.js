@@ -12,8 +12,8 @@ const TEAMS = [
   { id: 'castellon',  name: 'Castellón',     dataset: 'es.2', season: '2025-26' }
 ];
 
-async function fetchDataset(code) {
-  const url = `${BASE}/${code}.json`;
+async function fetchDataset(code, season) {
+  const url = `${BASE}/${season}/${code}.json`;
   const res = await fetch(url, {
     headers: { 'User-Agent': 'ValenciaFiles/1.0 (+github.com/mrl666/valencia-files)' }
   });
@@ -43,38 +43,37 @@ function extractResults(dataset, teamName) {
 async function run() {
   console.error('sport.js starting…');
 
-  // Group teams by dataset so we fetch each file once
-  const datasets = {};
   const byDataset = {};
   for (const team of TEAMS) {
-    if (!byDataset[team.dataset]) byDataset[team.dataset] = [];
-    byDataset[team.dataset].push(team);
+    const key = `${team.dataset}@${team.season}`;
+    if (!byDataset[key]) byDataset[key] = { dataset: team.dataset, season: team.season, teams: [] };
+    byDataset[key].teams.push(team);
   }
 
   const output = [];
 
-  for (const code of Object.keys(byDataset)) {
+  for (const key of Object.keys(byDataset)) {
+    const { dataset, season, teams } = byDataset[key];
     try {
-      const dataset = await fetchDataset(code);
-      console.error(`  ${code}: ${(dataset.matches || []).length} matches loaded`);
+      const data = await fetchDataset(dataset, season);
+      console.error(`  ${dataset} (${season}): ${(data.matches || []).length} matches loaded`);
 
-      // Debug: list unique team names in this dataset
       const teamNames = new Set();
-      (dataset.matches || []).forEach(m => {
+      (data.matches || []).forEach(m => {
         if (m.team1) teamNames.add(m.team1);
         if (m.team2) teamNames.add(m.team2);
       });
-      console.error(`  ${code} team names:`, Array.from(teamNames).join(' | '));
+      console.error(`  ${dataset} team names:`, Array.from(teamNames).slice(0, 25).join(' | '));
 
-      for (const team of byDataset[code]) {
-        const results = extractResults(dataset, team.name);
+      for (const team of teams) {
+        const results = extractResults(data, team.name);
         console.error(`  ${team.name}: ${results.length} played matches`);
-        output.push({ id: team.id, name: team.name, results });
+        output.push({ id: team.id, name: team.name.replace(/\s+(CF|UD)$/, ''), results });
       }
     } catch (e) {
-      console.error(`  ${code}: skipped — ${e.message}`);
-      for (const team of byDataset[code]) {
-        output.push({ id: team.id, name: team.name, results: [] });
+      console.error(`  ${dataset} (${season}): skipped — ${e.message}`);
+      for (const team of teams) {
+        output.push({ id: team.id, name: team.name.replace(/\s+(CF|UD)$/, ''), results: [] });
       }
     }
   }
