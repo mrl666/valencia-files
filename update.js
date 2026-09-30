@@ -37,11 +37,7 @@ try {
 } catch (e) { weather = null; }
 
 // --- Load International view ---
-let internationalNews = [];
-try {
-  internationalNews = JSON.parse(fs.readFileSync('international.json', 'utf8'));
-  if (!Array.isArray(internationalNews)) internationalNews = [];
-} catch (e) { internationalNews = []; }
+const internationalNews = Array.isArray(translated.international) ? translated.international : [];
 
 // --- Load used-news ---
 let usedNews = [];
