@@ -9,7 +9,7 @@ const TEAMS = [
   { id: 'valencia',   name: 'Valencia CF',   dataset: 'es.1', season: '2026-27' },
   { id: 'villarreal', name: 'Villarreal CF', dataset: 'es.1', season: '2026-27' },
   { id: 'levante',    name: 'Levante UD',    dataset: 'es.1', season: '2026-27' },
-  { id: 'castellon',  name: 'Castellón',     dataset: 'es.2', season: '2025-26' }
+  { id: 'castellon',  name: 'CD Castellón',  aliases: ['CD Castellón', 'Castellón'], dataset: 'es.2', season: '2025-26' }
 ];
 
 async function fetchDataset(code, season) {
@@ -21,16 +21,19 @@ async function fetchDataset(code, season) {
   return res.json();
 }
 
-function extractResults(dataset, teamName) {
+function extractResults(dataset, team) {
+  const names = team.aliases || [team.name];
   const matches = dataset.matches || [];
+
   const played = matches.filter(m => {
     if (!m.score || !m.score.ft) return false;
-    return m.team1 === teamName || m.team2 === teamName;
+    return names.includes(m.team1) || names.includes(m.team2);
   });
 
   played.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
   return played.slice(0, 3).map(m => {
-    const home = m.team1 === teamName;
+    const home = names.includes(m.team1);
     const opponent = home ? m.team2 : m.team1;
     const score = home
       ? `${m.score.ft[0]}-${m.score.ft[1]}`
@@ -62,7 +65,7 @@ async function run() {
       console.error(`  ${dataset} (${season}): ${(data.matches || []).length} matches loaded`);
 
       for (const team of teams) {
-        const results = extractResults(data, team.name);
+        const results = extractResults(data, team);
         console.error(`  ${team.name}: ${results.length} played matches`);
         output.push({ id: team.id, name: shortName(team.name), results, season });
       }
