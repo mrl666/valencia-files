@@ -44,6 +44,12 @@ jobs:
       - name: Show region.json
         run: cat region.json
 
+      - name: Fetch Sport
+        run: node sport.js > sport.json || echo '[]' > sport.json
+
+      - name: Show sport.json
+        run: cat sport.json
+
       - name: Fetch International view
         run: node international.js > international.json || echo '[]' > international.json
       - name: Show international.json
