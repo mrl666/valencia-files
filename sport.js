@@ -1,7 +1,7 @@
 // Sport scraper — openfootball/football.json (public domain, no API key)
-// Sources:
-//   https://raw.githubusercontent.com/openfootball/football.json/master/2026-27/es.1.json  (La Liga)
-//   https://raw.githubusercontent.com/openfootball/football.json/master/2026-27/es.2.json  (Segunda División)
+// Datasets:
+//   es.1 2026-27 — La Liga (Valencia, Villarreal, Levante)
+//   es.2 2025-26 — Segunda División (Castellón, last available season)
 
 const BASE = 'https://raw.githubusercontent.com/openfootball/football.json/master';
 
@@ -28,7 +28,6 @@ function extractResults(dataset, teamName) {
     return m.team1 === teamName || m.team2 === teamName;
   });
 
-  // Sort by date desc, take the last 3
   played.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
   return played.slice(0, 3).map(m => {
     const home = m.team1 === teamName;
@@ -38,6 +37,10 @@ function extractResults(dataset, teamName) {
       : `${m.score.ft[1]}-${m.score.ft[0]}`;
     return { opponent, score, home, date: m.date || '' };
   });
+}
+
+function shortName(fullName) {
+  return fullName.replace(/\s+(CF|UD|CD)$/, '');
 }
 
 async function run() {
@@ -58,22 +61,15 @@ async function run() {
       const data = await fetchDataset(dataset, season);
       console.error(`  ${dataset} (${season}): ${(data.matches || []).length} matches loaded`);
 
-      const teamNames = new Set();
-      (data.matches || []).forEach(m => {
-        if (m.team1) teamNames.add(m.team1);
-        if (m.team2) teamNames.add(m.team2);
-      });
-      console.error(`  ${dataset} team names:`, Array.from(teamNames).slice(0, 25).join(' | '));
-
       for (const team of teams) {
         const results = extractResults(data, team.name);
         console.error(`  ${team.name}: ${results.length} played matches`);
-        output.push({ id: team.id, name: team.name.replace(/\s+(CF|UD)$/, ''), results });
+        output.push({ id: team.id, name: shortName(team.name), results, season });
       }
     } catch (e) {
       console.error(`  ${dataset} (${season}): skipped — ${e.message}`);
       for (const team of teams) {
-        output.push({ id: team.id, name: team.name.replace(/\s+(CF|UD)$/, ''), results: [] });
+        output.push({ id: team.id, name: shortName(team.name), results: [], season });
       }
     }
   }
