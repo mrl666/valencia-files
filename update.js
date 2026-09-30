@@ -49,6 +49,13 @@ try {
   if (!Array.isArray(usedNews)) usedNews = [];
 } catch (e) { usedNews = []; }
 
+// --- Load Sport ---
+let sportData = [];
+try {
+  sportData = JSON.parse(fs.readFileSync('sport.json', 'utf8'));
+  if (!Array.isArray(sportData)) sportData = [];
+} catch (e) { sportData = []; }
+
 // --- Load quotes + rotation ---
 let thought = null;
 try {
@@ -219,6 +226,29 @@ if (internationalNews.length > 0) {
     /<div class="international-view" id="international-view" style="display:none;/,
     `<div class="international-view" id="international-view" style="display:block;`
   );
+}
+
+// --- Inject Sport ---
+if (sportData.length > 0) {
+  const buildCard = (team) => {
+    const rows = team.results.length
+      ? team.results.map(r => {
+          const homeAway = r.home ? 'H' : 'A';
+          return `<div class="result"><span>${esc(r.opponent)}</span><span class="score">${esc(r.score)}</span></div>`;
+        }).join('')
+      : '<div class="result"><span>No recent matches</span><span class="score">—</span></div>';
+
+    const seasonNote = team.season && !team.season.startsWith('2026')
+      ? ` <span style="color:var(--muted);font-weight:400;">(${esc(team.season)})</span>`
+      : '';
+
+    return `<div class="sport-card">
+      <div class="kicker">${esc(team.name)}${seasonNote}</div>
+      ${rows}
+    </div>`;
+  };
+
+  html = replaceById(html, 'sport-grid', sportData.map(buildCard).join(''));
 }
 
 // --- Edition stamp ---
