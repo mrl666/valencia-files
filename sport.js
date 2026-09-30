@@ -3,13 +3,13 @@
 //   https://raw.githubusercontent.com/openfootball/football.json/master/2026-27/es.1.json  (La Liga)
 //   https://raw.githubusercontent.com/openfootball/football.json/master/2026-27/es.2.json  (Segunda División)
 
-const BASE = 'https://raw.githubusercontent.com/openfootball/football.json/master/2026-27';
+const BASE = 'https://raw.githubusercontent.com/openfootball/football.json/master';
 
 const TEAMS = [
-  { id: 'valencia',   name: 'Valencia CF',   dataset: 'es.1' },
-  { id: 'villarreal', name: 'Villarreal CF', dataset: 'es.1' },
-  { id: 'levante',    name: 'Levante UD',    dataset: 'es.1' },
-  { id: 'castellon',  name: 'Castellón',     dataset: 'es.2' }
+  { id: 'valencia',   name: 'Valencia CF',   dataset: 'es.1', season: '2026-27' },
+  { id: 'villarreal', name: 'Villarreal CF', dataset: 'es.1', season: '2026-27' },
+  { id: 'levante',    name: 'Levante UD',    dataset: 'es.1', season: '2026-27' },
+  { id: 'castellon',  name: 'Castellón',     dataset: 'es.2', season: '2025-26' }
 ];
 
 async function fetchDataset(code) {
