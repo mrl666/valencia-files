@@ -542,5 +542,87 @@
   })();
 </script>
 
+<script>
+(function () {
+  var CITIES = [
+    { id: 'valencia',  lat: 39.4699, lon: -0.3763 },
+    { id: 'alicante',  lat: 38.3452, lon: -0.4810 },
+    { id: 'castellon', lat: 39.9864, lon: -0.0513 }
+  ];
+
+  var WMO = {
+    0:'Clear',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',
+    45:'Fog',48:'Rime fog',
+    51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',
+    61:'Light rain',63:'Rain',65:'Heavy rain',
+    71:'Light snow',73:'Snow',75:'Heavy snow',
+    80:'Rain showers',81:'Rain showers',82:'Violent showers',
+    95:'Thunderstorm',96:'Thunderstorm + hail',99:'Thunderstorm + hail'
+  };
+
+  function fetchCity(city) {
+    var url = 'https://api.open-meteo.com/v1/forecast'
+      + '?latitude=' + city.lat + '&longitude=' + city.lon
+      + '&current=temperature_2m,weather_code'
+      + '&daily=weather_code,temperature_2m_max,temperature_2m_min'
+      + '&timezone=Europe%2FMadrid&forecast_days=4';
+
+    return fetch(url)
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || !d.current || !d.daily) return null;
+        var code = d.current.weather_code != null ? d.current.weather_code : d.current.weathercode;
+        return {
+          id: city.id,
+          temp: Math.round(d.current.temperature_2m),
+          desc: WMO[code] || '—',
+          forecast: d.daily.time.slice(0, 4).map(function (iso, i) {
+            return {
+              day: new Date(iso).toLocaleDateString('en-GB', { weekday: 'short' }),
+              high: Math.round(d.daily.temperature_2m_max[i])
+            };
+          })
+        };
+      })
+      .catch(function () { return null; });
+  }
+
+  function updateCityCard(city) {
+    var cards = document.querySelectorAll('.weather-city');
+    if (!cards || !cards.length) return;
+
+    // Match by city name in .city-name
+    var target = null;
+    var names = { valencia: 'Valencia', alicante: 'Alicante', castellon: 'Castellón' };
+    for (var i = 0; i < cards.length; i++) {
+      var label = cards[i].querySelector('.city-name');
+      if (label && label.textContent.trim() === names[city.id]) {
+        target = cards[i];
+        break;
+      }
+    }
+    if (!target) return;
+
+    var tempEl = target.querySelector('.weather-now .temp');
+    var descEl = target.querySelector('.weather-now .desc');
+    if (tempEl) tempEl.textContent = city.temp + '°';
+    if (descEl) descEl.textContent = city.desc;
+
+    var forecastEls = target.querySelectorAll('.weather-forecast div');
+    city.forecast.forEach(function (f, i) {
+      if (!forecastEls[i]) return;
+      var d = forecastEls[i].querySelector('.d');
+      var t = forecastEls[i].querySelector('.t');
+      if (d) d.textContent = f.day;
+      if (t) t.textContent = f.high + '°';
+    });
+  }
+
+  Promise.all(CITIES.map(fetchCity)).then(function (results) {
+    results.forEach(function (r) { if (r) updateCityCard(r); });
+  });
+})();
+</script>
+  
 </body>
 </html>
