@@ -22,6 +22,7 @@ try {
       castellon: Array.isArray(parsed.castellon) ? parsed.castellon : [],
       region: Array.isArray(parsed.region) ? parsed.region : [],
       international: Array.isArray(parsed.international) ? parsed.international : []
+      admin: Array.isArray(parsed.admin) ? parsed.admin : []
     };
   }
 } catch (e) {
@@ -76,11 +77,7 @@ try {
 } catch (e) { console.error('Quote picker error:', e.message); }
 
 // --- Load Admin deadlines ---
-let adminDeadlines = [];
-try {
-  adminDeadlines = JSON.parse(fs.readFileSync('admin.json', 'utf8'));
-  if (!Array.isArray(adminDeadlines)) adminDeadlines = [];
-} catch (e) { adminDeadlines = []; }
+const adminDeadlines = Array.isArray(translated.admin) ? translated.admin : [];
 
 // --- Helpers ---
 function replaceById(html, id, newInner) {
