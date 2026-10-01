@@ -77,7 +77,7 @@ async function run() {
 
       all.push({
         title: ev.summary,
-        detail: ev.description || '',
+        detail: stripHtml(ev.description) || '',
         deadline: ev.date
       });
     }
@@ -89,6 +89,25 @@ async function run() {
 
   console.error(`admin.js extracted ${picks.length} upcoming deadlines`);
   console.log(JSON.stringify(picks));
+}
+
+function stripHtml(s) {
+  if (!s) return '';
+  return String(s)
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&aacute;/g, 'á').replace(/&eacute;/g, 'é').replace(/&iacute;/g, 'í')
+    .replace(/&oacute;/g, 'ó').replace(/&uacute;/g, 'ú').replace(/&ntilde;/g, 'ñ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 run()
