@@ -33,9 +33,8 @@ const toTranslate = new Set();
 function collect(items) {
   if (!Array.isArray(items)) return;
   items.forEach(item => {
-    if (item && item.title && !cache[item.title]) {
-      toTranslate.add(item.title);
-    }
+    if (item && item.title && !cache[item.title]) toTranslate.add(item.title);
+    if (item && item.detail && !cache[item.detail]) toTranslate.add(item.detail);
   });
 }
 
@@ -83,12 +82,17 @@ async function translateBatch(texts) {
 
 // --- Apply translations ---
 function applyTranslation(item) {
-  if (!item || !item.title) return item;
-  const translated = cache[item.title];
-  if (translated) {
-    return { ...item, title: translated, title_original: item.title };
+  if (!item) return item;
+  const out = { ...item };
+  if (item.title && cache[item.title]) {
+    out.title = cache[item.title];
+    out.title_original = item.title;
   }
-  return item;
+  if (item.detail && cache[item.detail]) {
+    out.detail = cache[item.detail];
+    out.detail_original = item.detail;
+  }
+  return out;
 }
 
 async function run() {
