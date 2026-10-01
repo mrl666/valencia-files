@@ -181,9 +181,33 @@
   .sport-card{background:var(--card);border:1px solid var(--rule);padding:12px}
   .sport-card .kicker{font-family:Helvetica,Arial,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:var(--accent);margin-bottom:6px}
   .sport-card h3{font-size:15px;margin:0 0 6px;line-height:1.25}
-  .result{display:flex;justify-content:space-between;align-items:center;font-family:Helvetica,Arial,sans-serif;font-size:12px;padding:4px 0;border-bottom:1px dotted var(--rule)}
-  .result:last-child{border-bottom:none}
-  .result .score{font-weight:700}
+  .result {
+    display: grid;
+    grid-template-columns: 1fr 24px;
+    grid-template-rows: auto auto;
+    column-gap: 8px;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    padding: 6px 0;
+    border-bottom: 1px dotted var(--rule);
+  }
+  .result:last-child { border-bottom: none; }
+  .result .team {
+    line-height: 1.2;
+    padding: 2px 0;
+  }
+  .result .team.winner {
+    font-weight: 700;
+  }
+  .result .score {
+    font-weight: 700;
+    text-align: right;
+    line-height: 1.2;
+    padding: 2px 0;
+  }
+  .result .score.score-win {
+    color: #1a7f37;
+  }
   .sport-more{font-family:Helvetica,Arial,sans-serif;font-size:11px;color:var(--muted);margin-top:10px}
 
   /* Expat tabs */
