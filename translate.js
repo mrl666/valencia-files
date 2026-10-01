@@ -18,6 +18,7 @@ const alicante = loadJson('alicante.json') || [];
 const castellon = loadJson('castellon.json') || [];
 const region = loadJson('region.json') || [];
 const international = loadJson('international.json') || [];
+const admin = loadJson('admin.json') || [];
 
 // --- Load translation cache ---
 let cache = {};
@@ -46,6 +47,7 @@ collect(alicante);
 collect(castellon);
 collect(region);
 collect(international);
+collect(admin);
 
 const uniqueHeadlines = Array.from(toTranslate);
 
@@ -105,7 +107,8 @@ async function run() {
     alicante: alicante.map(applyTranslation),
     castellon: castellon.map(applyTranslation),
     region: region.map(applyTranslation),
-    international: international.map(applyTranslation)
+    international: international.map(applyTranslation),
+    admin: admin.map(applyTranslation)
   };
 
   console.log(JSON.stringify(output));
