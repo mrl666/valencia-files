@@ -230,23 +230,44 @@ if (internationalNews.length > 0) {
 
 // --- Inject Sport ---
 if (sportData.length > 0) {
-  const buildCard = (team) => {
-    const rows = team.results.length
-      ? team.results.map(r => {
-          const homeAway = r.home ? 'H' : 'A';
-          return `<div class="result"><span>${esc(r.opponent)}</span><span class="score">${esc(r.score)}</span></div>`;
-        }).join('')
-      : '<div class="result"><span>No recent matches</span><span class="score">—</span></div>';
+const buildCard = (team) => {
+  const rows = team.results.length
+    ? team.results.map(r => {
+        const home = r.home;
+        const [a, b] = r.score.split('-').map(s => s.trim());
+        const homeScore = home ? a : b;
+        const awayScore = home ? b : a;
+        const homeTeam = home ? team.name : r.opponent;
+        const awayTeam = home ? r.opponent : team.name;
 
-    const seasonNote = team.season && !team.season.startsWith('2026')
-      ? ` <span style="color:var(--muted);font-weight:400;">(${esc(team.season)})</span>`
-      : '';
+        // Outcome from the perspective of this card's team
+        const teamScore = home ? homeScore : awayScore;
+        const oppScore  = home ? awayScore : homeScore;
+        const outcome = teamScore > oppScore ? 'win'
+                      : teamScore < oppScore ? 'loss'
+                      : 'draw';
 
-    return `<div class="sport-card">
-      <div class="kicker">${esc(team.name)}${seasonNote}</div>
-      ${rows}
-    </div>`;
-  };
+        const homeWin = parseInt(homeScore, 10) > parseInt(awayScore, 10);
+        const awayWin = parseInt(awayScore, 10) > parseInt(homeScore, 10);
+
+        return `<div class="result">
+          <div class="team ${homeWin ? 'winner' : ''}">${esc(homeTeam)}</div>
+          <div class="score ${homeWin ? 'score-win' : ''}">${esc(homeScore)}</div>
+          <div class="team ${awayWin ? 'winner' : ''}">${esc(awayTeam)}</div>
+          <div class="score ${awayWin ? 'score-win' : ''}">${esc(awayScore)}</div>
+        </div>`;
+      }).join('')
+    : '<div class="result"><span>No recent matches</span></div>';
+
+  const seasonNote = team.season && !team.season.startsWith('2026')
+    ? ` <span style="color:var(--muted);font-weight:400;">(${esc(team.season)})</span>`
+    : '';
+
+  return `<div class="sport-card">
+    <div class="kicker">${esc(team.name)}${seasonNote}</div>
+    ${rows}
+  </div>`;
+};
 
   html = replaceById(html, 'sport-grid', sportData.map(buildCard).join(''));
 }
