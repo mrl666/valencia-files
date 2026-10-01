@@ -50,6 +50,29 @@ jobs:
       - name: Show sport.json
         run: cat sport.json
 
+      - name: Cache AEAT calendars
+        id: cache-aeat
+        uses: actions/cache@v4
+        with:
+          path: |
+            aeat-declaraciones.ics
+            aeat-cuenta-corriente.ics
+          key: aeat-calendar-${{ github.run_id }}
+          restore-keys: |
+            aeat-calendar-
+
+      - name: Download AEAT calendars
+        if: steps.cache-aeat.outputs.cache-hit != 'true'
+        run: |
+          curl -sL "https://www.google.com/calendar/ical/hqp9h5ft4snag42aea96791g28%40group.calendar.google.com/public/basic.ics" -o aeat-declaraciones.ics
+          curl -sL "https://www.google.com/calendar/ical/jaktdfpo1d6frode4enl3of2jk%40group.calendar.google.com/public/basic.ics" -o aeat-cuenta-corriente.ics
+
+      - name: Fetch Admin deadlines
+        run: node admin.js > admin.json || echo '[]' > admin.json
+
+      - name: Show admin.json
+        run: cat admin.json
+
       - name: Fetch International view
         run: node international.js > international.json || echo '[]' > international.json
       - name: Show international.json
@@ -67,7 +90,7 @@ jobs:
         run: |
           git config user.name "valencia-files-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add index.html used.json used-news.json lead.json translated.json translations-cache.json international.json region.json castellon.json sport.json
+                    git add index.html used.json used-news.json lead.json translated.json translations-cache.json international.json region.json castellon.json sport.json admin.json
           git commit -m "Edition update $(date -u +'%Y-%m-%dT%H:%M')" || echo "No changes"
           git push
 
