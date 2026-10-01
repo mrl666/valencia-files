@@ -75,6 +75,13 @@ try {
   fs.writeFileSync('used.json', JSON.stringify(updated, null, 2));
 } catch (e) { console.error('Quote picker error:', e.message); }
 
+// --- Load Admin deadlines ---
+let adminDeadlines = [];
+try {
+  adminDeadlines = JSON.parse(fs.readFileSync('admin.json', 'utf8'));
+  if (!Array.isArray(adminDeadlines)) adminDeadlines = [];
+} catch (e) { adminDeadlines = []; }
+
 // --- Helpers ---
 function replaceById(html, id, newInner) {
   const openRe = new RegExp(`<([a-zA-Z][a-zA-Z0-9]*)\\b[^>]*\\bid="${id}"[^>]*>`);
@@ -270,6 +277,40 @@ const buildCard = (team) => {
 };
 
   html = replaceById(html, 'sport-grid', sportData.map(buildCard).join(''));
+}
+
+// --- Inject Admin deadlines ---
+if (adminDeadlines.length > 0) {
+  const monthsShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  const formatDate = (iso) => {
+    const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return iso;
+    const day = parseInt(m[3], 10);
+    const month = monthsShort[parseInt(m[2], 10) - 1];
+    return `${day} ${month} ${m[1]}`;
+  };
+
+  const trimDetail = (s) => {
+    if (!s) return '';
+    // First line only, and cap at 160 chars
+    let line = String(s).split(/\r?\n/)[0].trim();
+    // Strip common AEAT prefixes
+    line = line.replace(/^[-–•\s]+/, '');
+    if (line.length > 160) line = line.slice(0, 157).trimEnd() + '…';
+    return line;
+  };
+
+  const htmlList = adminDeadlines.map(item => {
+    const detail = trimDetail(item.detail);
+    return `<li>
+      <h3>${esc(item.title)}</h3>
+      ${detail ? `<p>${esc(detail)}</p>` : ''}
+      <span class="src">Deadline: ${esc(formatDate(item.deadline))} · Source: AEAT — Agencia Tributaria</span>
+    </li>`;
+  }).join('');
+
+  html = replaceById(html, 'admin-deadlines', htmlList);
 }
 
 // --- Edition stamp ---
