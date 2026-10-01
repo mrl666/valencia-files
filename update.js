@@ -21,7 +21,7 @@ try {
       alicante: Array.isArray(parsed.alicante) ? parsed.alicante : [],
       castellon: Array.isArray(parsed.castellon) ? parsed.castellon : [],
       region: Array.isArray(parsed.region) ? parsed.region : [],
-      international: Array.isArray(parsed.international) ? parsed.international : []
+      international: Array.isArray(parsed.international) ? parsed.international : [],
       admin: Array.isArray(parsed.admin) ? parsed.admin : []
     };
   }
