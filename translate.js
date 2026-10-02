@@ -33,8 +33,15 @@ const toTranslate = new Set();
 function collect(items) {
   if (!Array.isArray(items)) return;
   items.forEach(item => {
-    if (item && item.title && !cache[item.title]) toTranslate.add(item.title);
-    if (item && item.detail && !cache[item.detail]) toTranslate.add(item.detail);
+    if (!item) return;
+    if (item.title) {
+      item.title = decodeHtmlEntities(item.title);
+      if (!cache[item.title]) toTranslate.add(item.title);
+    }
+    if (item.detail) {
+      item.detail = decodeHtmlEntities(item.detail);
+      if (!cache[item.detail]) toTranslate.add(item.detail);
+    }
   });
 }
 
@@ -116,6 +123,25 @@ async function run() {
   };
 
   console.log(JSON.stringify(output));
+}
+
+function decodeHtmlEntities(s) {
+  if (!s) return s;
+  return String(s)
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(parseInt(n, 10)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&aacute;/g, 'á').replace(/&eacute;/g, 'é')
+    .replace(/&iacute;/g, 'í').replace(/&oacute;/g, 'ó')
+    .replace(/&uacute;/g, 'ú').replace(/&ntilde;/g, 'ñ')
+    .replace(/&Aacute;/g, 'Á').replace(/&Eacute;/g, 'É')
+    .replace(/&Iacute;/g, 'Í').replace(/&Oacute;/g, 'Ó')
+    .replace(/&Uacute;/g, 'Ú').replace(/&Ntilde;/g, 'Ñ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/&laquo;/g, '«').replace(/&raquo;/g, '»')
+    .replace(/&hellip;/g, '…');
 }
 
 run().catch(err => {
