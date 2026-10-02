@@ -23,6 +23,29 @@ const HTML_MONTHS = {
   julio:'07', agosto:'08', septiembre:'09', octubre:'10', noviembre:'11', diciembre:'12'
 };
 
+function cleanTitle(raw) {
+  return String(raw || '')
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<\/p>/gi, ' ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&#8217;/g, '’')
+    .replace(/&#8211;/g, '–')
+    .replace(/&#039;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function isSuspicious(title) {
+  if (!title) return true;
+  if (title.length < 12) return true;
+  if (title.length > 220) return true;
+  const dates = title.match(/\d{1,2}\s+(?:de\s+)?[a-zA-Z]+\s+\d{4}/g);
+  if (dates && dates.length > 1) return true;
+  return false;
+}
+
 async function fetchHtmlSource(source) {
   console.error(`fetchHtmlSource: ${source.name}`);
   const res = await fetch(source.url, {
@@ -46,25 +69,13 @@ async function fetchHtmlSource(source) {
     while ((m = re.exec(html)) !== null) {
       const url = m[1];
       if (seen.has(url)) continue;
-    const title = titleMatch[1]
-      .replace(/<[^>]+>/g, '')
-      .replace(/&amp;/g, '&')
-      .replace(/&#8217;/g, '’')
-      .replace(/&#8211;/g, '–')
-      .replace(/&#039;/g, "'")
-      .replace(/&quot;/g, '"')
-      .trim();
 
-    const title = m[2]
-      .replace(/<br\s*\/?>/gi, ' ')
-      .replace(/<\/p>/gi, ' ')
-      .replace(/<[^>]+>/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
+      const title = cleanTitle(m[2]);
+      if (isSuspicious(title)) {
+        console.error(`  Sagunt: skipped suspicious title (${title.length} chars): ${title.slice(0, 60)}…`);
+        continue;
+      }
 
-    const url = linkMatch[1].trim();
-    if (!title || title.length < 10 || seen.has(url)) continue;
-      if (!title || title.length < 12) continue;
       const day = String(m[3]).padStart(2, '0');
       const month = HTML_MONTHS[m[4].toLowerCase()];
       const year = m[5];
@@ -72,15 +83,6 @@ async function fetchHtmlSource(source) {
       const date = `${year}-${month}-${day}`;
       const id = `sagunt-${url.split('/').filter(Boolean).pop()}`;
       seen.add(url);
-      if (title.length > 220) {
-        console.error(`Sagunt: skipping overlong title (${title.length} chars)`);
-        continue;
-      }
-      const dateMatches = title.match(/\d{1,2}\s+(?:de\s+)?[a-zA-Z]+\s+\d{4}/g);
-      if (dateMatches && dateMatches.length > 1) {
-        console.error(`Sagunt: skipping concatenated title (${dateMatches.length} dates found)`);
-        continue;
-      }
       items.push({
         id, title,
         url: 'https://aytosagunto.es' + url,
@@ -99,32 +101,10 @@ async function fetchHtmlSource(source) {
     while ((m = linkRe.exec(html)) !== null) {
       const url = m[1];
       if (seen.has(url)) continue;
-          const title = titleMatch[1]
-      .replace(/<[^>]+>/g, '')
-      .replace(/&amp;/g, '&')
-      .replace(/&#8217;/g, '’')
-      .replace(/&#8211;/g, '–')
-      .replace(/&#039;/g, "'")
-      .replace(/&quot;/g, '"')
-      .trim();
 
-    const title = m[2]
-    .replace(/<br\s*\/?>/gi, ' ')
-    .replace(/<\/p>/gi, ' ')
-    .replace(/<[^>]+>/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-    const url = linkMatch[1].trim();
-    if (!title || title.length < 10 || seen.has(url)) continue;
-      if (!title || title.length < 12) continue;
-      if (title.length > 220) {
-        console.error(`XATIVA: skipping overlong title (${title.length} chars)`);
-        continue;
-      }
-      const dateMatches = title.match(/\d{1,2}\s+(?:de\s+)?[a-zA-Z]+\s+\d{4}/g);
-      if (dateMatches && dateMatches.length > 1) {
-        console.error(`XATIVA: skipping concatenated title (${dateMatches.length} dates found)`);
+      const title = cleanTitle(m[2]);
+      if (isSuspicious(title)) {
+        console.error(`  Xativa: skipped suspicious title (${title.length} chars): ${title.slice(0, 60)}…`);
         continue;
       }
 
@@ -172,17 +152,11 @@ async function fetchFeed(source) {
     const dateMatch  = block.match(/<pubDate>([\s\S]*?)<\/pubDate>/);
     if (!titleMatch || !linkMatch) continue;
 
-    const title = titleMatch[1]
-      .replace(/<[^>]+>/g, '')
-      .replace(/&amp;/g, '&')
-      .replace(/&#8217;/g, '’')
-      .replace(/&#8211;/g, '–')
-      .replace(/&#039;/g, "'")
-      .replace(/&quot;/g, '"')
-      .trim();
+    const title = cleanTitle(titleMatch[1]);
+    if (!title || title.length < 10) continue;
 
     const url = linkMatch[1].trim();
-    if (!title || title.length < 10 || seen.has(url)) continue;
+    if (seen.has(url)) continue;
 
     let date = '';
     if (dateMatch) {
@@ -214,9 +188,7 @@ async function run() {
     }
   }
 
-  all.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  const pool = all.slice(0, 80);
-
+  // Final safety filter — drop anything still suspicious
   const cleaned = all.filter(item => {
     if (!item.title) return false;
     if (item.title.length > 250) return false;
@@ -224,6 +196,9 @@ async function run() {
     if (dates && dates.length > 1) return false;
     return true;
   });
+
+  cleaned.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const pool = cleaned.slice(0, 80);
 
   console.error(`region.js extracted ${pool.length} items total`);
   console.log(JSON.stringify(pool));
