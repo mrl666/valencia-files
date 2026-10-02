@@ -61,7 +61,8 @@ const uniqueHeadlines = Array.from(toTranslate);
 async function translateBatch(texts) {
   if (texts.length === 0) return {};
   const params = new URLSearchParams();
-  texts.forEach(t => params.append('text', t));
+  const marked = texts.map(t => contextualize(t));
+  marked.forEach(t => params.append('text', t));
   params.append('source_lang', 'ES');
   params.append('target_lang', 'EN-GB');
 
@@ -82,7 +83,7 @@ async function translateBatch(texts) {
   const data = await res.json();
   const out = {};
   data.translations.forEach((t, i) => {
-    out[texts[i]] = t.text;
+    out[texts[i]] = decontextualize(t.text);
   });
   return out;
 }
@@ -142,6 +143,19 @@ function decodeHtmlEntities(s) {
     .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
     .replace(/&laquo;/g, '«').replace(/&raquo;/g, '»')
     .replace(/&hellip;/g, '…');
+}
+
+function contextualize(text) {
+  return String(text)
+    // Force "Generalitat" to be understood as Valencian
+    .replace(/\bGeneralitat Valenciana\b/g, 'GVA_VALENCIANA')
+    .replace(/\bGeneralitat\b/g, 'GVA_VALENCIANA');
+}
+
+function decontextualize(text) {
+  return String(text)
+    .replace(/GVA_VALENCIANA/g, 'Generalitat Valenciana')
+    .replace(/Generalitat Valenciana Valenciana/g, 'Generalitat Valenciana');
 }
 
 run().catch(err => {
