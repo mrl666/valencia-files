@@ -27,6 +27,39 @@ try {
   if (typeof cache !== 'object' || Array.isArray(cache)) cache = {};
 } catch (e) { cache = {}; }
 
+// --- Decode HTML entities before sending to DeepL ---
+function decodeHtmlEntities(s) {
+  if (!s) return s;
+  return String(s)
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(parseInt(n, 10)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&aacute;/g, 'á').replace(/&eacute;/g, 'é')
+    .replace(/&iacute;/g, 'í').replace(/&oacute;/g, 'ó')
+    .replace(/&uacute;/g, 'ú').replace(/&ntilde;/g, 'ñ')
+    .replace(/&Aacute;/g, 'Á').replace(/&Eacute;/g, 'É')
+    .replace(/&Iacute;/g, 'Í').replace(/&Oacute;/g, 'Ó')
+    .replace(/&Uacute;/g, 'Ú').replace(/&Ntilde;/g, 'Ñ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/&laquo;/g, '«').replace(/&raquo;/g, '»')
+    .replace(/&hellip;/g, '…');
+}
+
+// --- Force "Generalitat" to be understood as Valencian ---
+function contextualize(text) {
+  return String(text)
+    .replace(/\bGeneralitat Valenciana\b/g, 'GVA_VALENCIANA')
+    .replace(/\bGeneralitat\b/g, 'GVA_VALENCIANA');
+}
+
+function decontextualize(text) {
+  return String(text)
+    .replace(/GVA_VALENCIANA/g, 'Generalitat Valenciana')
+    .replace(/Generalitat Valenciana Valenciana/g, 'Generalitat Valenciana');
+}
+
 // --- Collect all headlines needing translation ---
 const toTranslate = new Set();
 
@@ -46,6 +79,7 @@ function collect(items) {
 }
 
 if (lead && lead.title) {
+  lead.title = decodeHtmlEntities(lead.title);
   if (!cache[lead.title]) toTranslate.add(lead.title);
 }
 collect(valencia);
@@ -124,38 +158,6 @@ async function run() {
   };
 
   console.log(JSON.stringify(output));
-}
-
-function decodeHtmlEntities(s) {
-  if (!s) return s;
-  return String(s)
-    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(parseInt(n, 10)))
-    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
-    .replace(/&aacute;/g, 'á').replace(/&eacute;/g, 'é')
-    .replace(/&iacute;/g, 'í').replace(/&oacute;/g, 'ó')
-    .replace(/&uacute;/g, 'ú').replace(/&ntilde;/g, 'ñ')
-    .replace(/&Aacute;/g, 'Á').replace(/&Eacute;/g, 'É')
-    .replace(/&Iacute;/g, 'Í').replace(/&Oacute;/g, 'Ó')
-    .replace(/&Uacute;/g, 'Ú').replace(/&Ntilde;/g, 'Ñ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
-    .replace(/&laquo;/g, '«').replace(/&raquo;/g, '»')
-    .replace(/&hellip;/g, '…');
-}
-
-function contextualize(text) {
-  return String(text)
-    // Force "Generalitat" to be understood as Valencian
-    .replace(/\bGeneralitat Valenciana\b/g, 'GVA_VALENCIANA')
-    .replace(/\bGeneralitat\b/g, 'GVA_VALENCIANA');
-}
-
-function decontextualize(text) {
-  return String(text)
-    .replace(/GVA_VALENCIANA/g, 'Generalitat Valenciana')
-    .replace(/Generalitat Valenciana Valenciana/g, 'Generalitat Valenciana');
 }
 
 run().catch(err => {
