@@ -1,0 +1,11 @@
+{
+  "name": "valencia-files",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "pdf": "node pdf.js"
+  },
+  "dependencies": {
+    "html-pdf-lite": "^1.0.0"
+  }
+}
