@@ -55,6 +55,15 @@ async function fetchHtmlSource(source) {
       const date = `${year}-${month}-${day}`;
       const id = `sagunt-${url.split('/').filter(Boolean).pop()}`;
       seen.add(url);
+      if (title.length > 220) {
+        console.error(`Sagunt: skipping overlong title (${title.length} chars)`);
+        continue;
+      }
+      const dateMatches = title.match(/\d{1,2}\s+(?:de\s+)?[a-zA-Z]+\s+\d{4}/g);
+      if (dateMatches && dateMatches.length > 1) {
+        console.error(`Sagunt: skipping concatenated title (${dateMatches.length} dates found)`);
+        continue;
+      }
       items.push({
         id, title,
         url: 'https://aytosagunto.es' + url,
@@ -75,6 +84,15 @@ async function fetchHtmlSource(source) {
       if (seen.has(url)) continue;
       const title = m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
       if (!title || title.length < 12) continue;
+      if (title.length > 220) {
+        console.error(`XATIVA: skipping overlong title (${title.length} chars)`);
+        continue;
+      }
+      const dateMatches = title.match(/\d{1,2}\s+(?:de\s+)?[a-zA-Z]+\s+\d{4}/g);
+      if (dateMatches && dateMatches.length > 1) {
+        console.error(`XATIVA: skipping concatenated title (${dateMatches.length} dates found)`);
+        continue;
+      }
 
       const start = Math.max(0, m.index - 1500);
       const before = html.slice(start, m.index);
@@ -164,6 +182,14 @@ async function run() {
 
   all.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
   const pool = all.slice(0, 80);
+
+  const cleaned = all.filter(item => {
+    if (!item.title) return false;
+    if (item.title.length > 250) return false;
+    const dates = item.title.match(/\d{1,2}\s+(?:de\s+)?[a-zA-Z]+\s+\d{4}/g);
+    if (dates && dates.length > 1) return false;
+    return true;
+  });
 
   console.error(`region.js extracted ${pool.length} items total`);
   console.log(JSON.stringify(pool));
