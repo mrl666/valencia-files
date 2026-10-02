@@ -46,7 +46,24 @@ async function fetchHtmlSource(source) {
     while ((m = re.exec(html)) !== null) {
       const url = m[1];
       if (seen.has(url)) continue;
-      const title = m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    const title = titleMatch[1]
+      .replace(/<[^>]+>/g, '')
+      .replace(/&amp;/g, '&')
+      .replace(/&#8217;/g, '’')
+      .replace(/&#8211;/g, '–')
+      .replace(/&#039;/g, "'")
+      .replace(/&quot;/g, '"')
+      .trim();
+
+    const title = m[2]
+      .replace(/<br\s*\/?>/gi, ' ')
+      .replace(/<\/p>/gi, ' ')
+      .replace(/<[^>]+>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const url = linkMatch[1].trim();
+    if (!title || title.length < 10 || seen.has(url)) continue;
       if (!title || title.length < 12) continue;
       const day = String(m[3]).padStart(2, '0');
       const month = HTML_MONTHS[m[4].toLowerCase()];
@@ -82,7 +99,24 @@ async function fetchHtmlSource(source) {
     while ((m = linkRe.exec(html)) !== null) {
       const url = m[1];
       if (seen.has(url)) continue;
-      const title = m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+          const title = titleMatch[1]
+      .replace(/<[^>]+>/g, '')
+      .replace(/&amp;/g, '&')
+      .replace(/&#8217;/g, '’')
+      .replace(/&#8211;/g, '–')
+      .replace(/&#039;/g, "'")
+      .replace(/&quot;/g, '"')
+      .trim();
+
+    const title = m[2]
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<\/p>/gi, ' ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+    const url = linkMatch[1].trim();
+    if (!title || title.length < 10 || seen.has(url)) continue;
       if (!title || title.length < 12) continue;
       if (title.length > 220) {
         console.error(`XATIVA: skipping overlong title (${title.length} chars)`);
