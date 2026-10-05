@@ -208,10 +208,11 @@ if (weather) {
       <div class="weather-forecast">${forecastHtml}</div>
     </div>`;
   };
+
   html = replaceById(html, 'weather-card',
     `<div class="kicker">Weather · València · Alacant · Castelló</div>
      <div class="weather-cities">${weather.map(buildCity).join('')}</div>
-     <div class="source-note">Source: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a></div>`
+     <div class="source-note">Source: <a href="https://www.aemet.es/" target="_blank" rel="noopener">AEMET</a> — Agencia Estatal de Meteorología</div>`
   );
 }
 
