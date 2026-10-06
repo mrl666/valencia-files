@@ -26,7 +26,7 @@ jobs:
             --max-time 15 \
             https://comunica.gva.es/es/totes | head -10
           echo ""
-          echo "=== curl exit code: $? ===
+          echo "=== curl exit code: $? ==="
 
       - name: Fetch GVA lead
         env:
