@@ -7,6 +7,7 @@ const PIXABAY_API_KEY = process.env.PIXABAY_API_KEY;
 
 const GVA_URL = 'https://comunica.gva.es/es/totes';
 const PIXABAY_KEYWORDS = 'valencia spain';
+const fs = require('fs');
 
 const UA = 'Mozilla/5.0 (compatible; ValenciaFiles/1.0; +https://github.com/mrl666/valencia-files)';
 
@@ -123,16 +124,35 @@ async function fetchGvaLead() {
 async function run() {
   console.error('fetch-lead.js starting…');
 
-  const lead = await fetchGvaLead();
+  // 1. Try to fetch a fresh lead from GVA
+  let lead = await fetchGvaLead();
+
+  // 2. If GVA failed, fall back to the previous lead (if any)
+  if (!lead) {
+    try {
+      const previous = JSON.parse(fs.readFileSync('lead.json', 'utf8'));
+      if (previous && previous.title) {
+        console.error(`  Using previous lead: "${previous.title.slice(0, 80)}"`);
+        lead = previous;
+      }
+    } catch (e) {
+      // no previous lead — we'll write {} at the end
+    }
+  }
+
+  // 3. Fetch a fresh Pixabay image regardless of where the lead came from
   const image = await fetchImage();
 
   if (!lead) {
-    console.error('fetch-lead.js: no lead available — writing {}');
+    console.error('fetch-lead.js: no lead available (no previous, no GVA) — writing {}');
     console.log('{}');
     return;
   }
 
-  if (image) lead.image = image;
+  if (image) {
+    lead.image = image;
+    console.error(`  Image attached: ${image.url.slice(0, 60)}…`);
+  }
 
   console.error('fetch-lead.js finished OK');
   console.log(JSON.stringify(lead));
