@@ -28,11 +28,27 @@ async function fetchImage() {
     return null;
   }
 
-  // Rotate through pages based on the current hour; further jitter via random pick.
-  const page = (Math.floor(Date.now() / 3600000) % 10) + 1;
+  // Rotate keywords every 8 hours (aligned with the pipeline)
+  const KEYWORD_SETS = [
+    'valencia ciudad artes',
+    'valencia fallas',
+    'valencia puerto',
+    'valencia centro historico',
+    'valencia playa malvarrosa',
+    'valencia catedral',
+    'valencia turia rio',
+    'valencia mercado central'
+  ];
+
+  const now = new Date();
+  const minutesSinceEpoch = Math.floor(now.getTime() / 60000);
+  const hoursSinceEpoch = Math.floor(now.getTime() / 3600000);
+
+  const keywords = KEYWORD_SETS[hoursSinceEpoch % KEYWORD_SETS.length];
+  const page = (minutesSinceEpoch % 20) + 1;
 
   const url = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}` +
-              `&q=${encodeURIComponent(PIXABAY_KEYWORDS)}` +
+              `&q=${encodeURIComponent(keywords)}` +
               `&image_type=photo&orientation=horizontal&per_page=20` +
               `&safesearch=true&page=${page}`;
 
@@ -42,11 +58,11 @@ async function fetchImage() {
 
     const data = await res.json();
     const hits = Array.isArray(data.hits) ? data.hits : [];
-    console.error(`  Pixabay: page ${page}, ${hits.length} hits`);
+    console.error(`  Pixabay: "${keywords}" page ${page}, ${hits.length} hits`);
 
     if (hits.length === 0) return null;
 
-    const idx = Math.floor(Math.random() * hits.length);
+    const idx = minutesSinceEpoch % hits.length;
     const img = hits[idx];
 
     return {
@@ -59,7 +75,6 @@ async function fetchImage() {
     return null;
   }
 }
-
 // --- GVA: fetch the top headline ---
 async function fetchGvaLead() {
   try {
