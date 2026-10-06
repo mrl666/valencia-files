@@ -31,14 +31,14 @@ async function fetchImage() {
 
   // Rotate keywords every 8 hours (aligned with the pipeline)
   const KEYWORD_SETS = [
-    'valencia ciudad artes',
-    'valencia fallas',
-    'valencia puerto',
-    'valencia centro historico',
-    'valencia playa malvarrosa',
-    'valencia catedral',
-    'valencia turia rio',
-    'valencia mercado central'
+    'valencia spain',
+    'valencia city',
+    'valencia architecture',
+    'valencia beach',
+    'valencia street',
+    'valencia mediterranean',
+    'valencia sunset',
+    'valencia festival'
   ];
 
   const now = new Date();
