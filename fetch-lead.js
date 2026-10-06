@@ -1,86 +1,130 @@
+// Lead + image fetcher for Valencia Files.
+// - Lead: Generalitat Valenciana (comunica.gva.es)
+// - Image: Pixabay (rotating Valencia-related photos)
+// Output: JSON on stdout (single object with title, url, optional image)
+
 const PIXABAY_API_KEY = process.env.PIXABAY_API_KEY;
 
-// Keywords for the Pixabay image — use general Valencia themes
-const IMAGE_KEYWORDS = 'valencia spain';
+const GVA_URL = 'https://comunica.gva.es/es/totes';
+const PIXABAY_KEYWORDS = 'valencia spain';
 
+const UA = 'Mozilla/5.0 (compatible; ValenciaFiles/1.0; +https://github.com/mrl666/valencia-files)';
+
+async function testFetch(label, url, options = {}) {
+  try {
+    const res = await fetch(url, options);
+    console.error(`  ${label}: HTTP ${res.status}`);
+    return res;
+  } catch (e) {
+    console.error(`  ${label}: FETCH FAILED — ${e.message}`);
+    throw e;
+  }
+}
+
+// --- Pixabay: fetch a rotating Valencia image ---
 async function fetchImage() {
-  if (!PIXABAY_API_KEY) return null;
+  if (!PIXABAY_API_KEY) {
+    console.error('  Pixabay: no API key, skipping');
+    return null;
+  }
 
-  // Valencia-specific keywords for consistent city imagery
-  const keywords = 'valencia spain';
+  // Rotate through pages based on the current hour; further jitter via random pick.
+  const page = (Math.floor(Date.now() / 3600000) % 10) + 1;
+
+  const url = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}` +
+              `&q=${encodeURIComponent(PIXABAY_KEYWORDS)}` +
+              `&image_type=photo&orientation=horizontal&per_page=20` +
+              `&safesearch=true&page=${page}`;
 
   try {
-    // Option A: Rotate through pages based on the hour (up to ~10 pages)
-    const page = (Math.floor(Date.now() / 3600000) % 10) + 1;
-
-    const url = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}` +
-                `&q=${encodeURIComponent(keywords)}` +
-                `&image_type=photo&orientation=horizontal&per_page=20` +
-                `&safesearch=true&page=${page}`;
-
-    const res = await fetch(url);
+    const res = await testFetch('Pixabay', url);
     if (!res.ok) return null;
+
     const data = await res.json();
+    const hits = Array.isArray(data.hits) ? data.hits : [];
+    console.error(`  Pixabay: page ${page}, ${hits.length} hits`);
 
-    if (data.hits && data.hits.length > 0) {
-      // Pick a random image from this page for further variety
-      const idx = Math.floor(Math.random() * data.hits.length);
-      const img = data.hits[idx];
+    if (hits.length === 0) return null;
 
-      return {
-        url: img.webformatURL,
-        credit: `Photo by ${img.user} on Pixabay`,
-        sourceUrl: img.pageURL
-      };
-    }
+    const idx = Math.floor(Math.random() * hits.length);
+    const img = hits[idx];
+
+    return {
+      url: img.webformatURL,
+      credit: `Photo by ${img.user} on Pixabay`,
+      sourceUrl: img.pageURL
+    };
   } catch (e) {
-    // Lead still works without an image
+    console.error(`  Pixabay: skipped — ${e.message}`);
+    return null;
   }
-  return null;
 }
 
-async function fetchLead() {
-  const url = 'https://comunica.gva.es/es/totes';
+// --- GVA: fetch the top headline ---
+async function fetchGvaLead() {
+  try {
+    const res = await testFetch('GVA', GVA_URL, {
+      headers: {
+        'User-Agent': UA,
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Language': 'es-ES,es;q=0.9'
+      },
+      redirect: 'follow'
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-  const res = await fetch(url, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (compatible; ValenciaFiles/1.0; +https://github.com/mrl666/valencia-files)',
-      'Accept': 'text/html,application/xhtml+xml',
-      'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8'
-    },
-    redirect: 'follow'
-  });
-  if (!res.ok) throw new Error(`GVA HTTP ${res.status}`);
-  const html = await res.text();
+    const html = await res.text();
+    console.error(`  GVA: ${html.length} bytes of HTML`);
 
-  // Extract the first news headline and link.
-  // GVA items look like <a href="/es/detalle?id=...">TITLE</a> or similar.
-  const linkRe = /<a[^>]+href="([^"]*(?:detalle|noticia)[^"]*)"[^>]*>([\s\S]*?)<\/a>/g;
+    // Match links that look like news detail pages
+    const linkRe = /<a[^>]+href="([^"]*(?:detalle|noticia)[^"]*)"[^>]*>([\s\S]*?)<\/a>/g;
+    let match;
+    let candidate = null;
+    while ((match = linkRe.exec(html)) !== null) {
+      const link = match[1];
+      const title = match[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+      if (title.length < 15) continue;
+      candidate = {
+        title,
+        url: link.startsWith('http') ? link : 'https://comunica.gva.es' + link
+      };
+      break;
+    }
 
-  let match;
-  let lead = null;
-  while ((match = linkRe.exec(html)) !== null) {
-    const link = match[1];
-    const title = match[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-    if (title.length < 15) continue;
-    lead = {
-      title,
-      url: link.startsWith('http') ? link : 'https://comunica.gva.es' + link
-    };
-    break;
+    if (!candidate) {
+      console.error('  GVA: no news link matched');
+      return null;
+    }
+
+    console.error(`  GVA: lead = "${candidate.title.slice(0, 80)}"`);
+    return candidate;
+  } catch (e) {
+    console.error(`  GVA: failed — ${e.message}`);
+    return null;
+  }
+}
+
+// --- Main ---
+async function run() {
+  console.error('fetch-lead.js starting…');
+
+  const lead = await fetchGvaLead();
+  const image = await fetchImage();
+
+  if (!lead) {
+    console.error('fetch-lead.js: no lead available — writing {}');
+    console.log('{}');
+    return;
   }
 
-  if (!lead) throw new Error('No GVA lead found');
-
-  const image = await fetchImage();
   if (image) lead.image = image;
 
-  return lead;
+  console.error('fetch-lead.js finished OK');
+  console.log(JSON.stringify(lead));
 }
 
-fetchLead()
-  .then(lead => console.log(JSON.stringify(lead)))
-  .catch(err => {
-    console.error('Lead fetch error:', err.message);
-    process.exit(1);
-  });
+run().catch(err => {
+  console.error('Lead fetch error:', err.message);
+  console.log('{}');
+  process.exit(0); // never fail the pipeline over a missing lead
+});
