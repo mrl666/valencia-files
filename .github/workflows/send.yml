@@ -19,6 +19,15 @@ jobs:
       - name: Fetch weather
         run: node weather.js > weather.json || echo '[]' > weather.json
 
+      - name: Test GVA with curl
+        run: |
+          echo "=== curl test ==="
+          curl -sI -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/128.0 Safari/537.36" \
+            --max-time 15 \
+            https://comunica.gva.es/es/totes | head -10
+          echo ""
+          echo "=== curl exit code: $? ===
+
       - name: Fetch GVA lead
         env:
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
