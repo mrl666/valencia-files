@@ -5,15 +5,28 @@ const IMAGE_KEYWORDS = 'valencia spain';
 
 async function fetchImage() {
   if (!PIXABAY_API_KEY) return null;
+
+  // Valencia-specific keywords for consistent city imagery
+  const keywords = 'valencia spain';
+
   try {
+    // Option A: Rotate through pages based on the hour (up to ~10 pages)
+    const page = (Math.floor(Date.now() / 3600000) % 10) + 1;
+
     const url = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}` +
-                `&q=${encodeURIComponent(IMAGE_KEYWORDS)}` +
-                `&image_type=photo&orientation=horizontal&per_page=3&safesearch=true`;
+                `&q=${encodeURIComponent(keywords)}` +
+                `&image_type=photo&orientation=horizontal&per_page=20` +
+                `&safesearch=true&page=${page}`;
+
     const res = await fetch(url);
     if (!res.ok) return null;
     const data = await res.json();
+
     if (data.hits && data.hits.length > 0) {
-      const img = data.hits[0];
+      // Pick a random image from this page for further variety
+      const idx = Math.floor(Math.random() * data.hits.length);
+      const img = data.hits[idx];
+
       return {
         url: img.webformatURL,
         credit: `Photo by ${img.user} on Pixabay`,
@@ -21,7 +34,7 @@ async function fetchImage() {
       };
     }
   } catch (e) {
-    // Ignore image errors — lead still works without an image
+    // Lead still works without an image
   }
   return null;
 }
