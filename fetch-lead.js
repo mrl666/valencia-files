@@ -15,17 +15,6 @@ const PIXABAY_API_KEY = process.env.PIXABAY_API_KEY;
 const GVA_URL = 'https://comunica.gva.es/es/totes';
 const UA = 'Mozilla/5.0 (compatible; ValenciaFiles/1.0; +https://github.com/mrl666/valencia-files)';
 
-const KEYWORD_SETS = [
-  'valencia spain',
-  'valencia city',
-  'valencia architecture',
-  'valencia beach',
-  'valencia street',
-  'valencia mediterranean',
-  'valencia sunset',
-  'valencia festival'
-];
-
 async function testFetch(label, url, options = {}) {
   try {
     const res = await fetch(url, options);
@@ -43,6 +32,26 @@ async function fetchImage() {
     console.error('  Pixabay: no API key, skipping');
     return null;
   }
+
+  // Landmark-specific keywords — these won't match generic "valencia" content
+  const KEYWORD_SETS = [
+    'ciudad de las artes valencia',
+    'valencia fallas',
+    'valencia cathedral',
+    'valencia malvarrosa beach',
+    'valencia turia river',
+    'valencia central market',
+    'valencia old town',
+    'valencia paella'
+  ];
+
+  // Reject anything whose tags or user contain these terms
+  const BLACKLIST = [
+    'renfe', 'train', 'tren', 'station', 'estacion', 'estación',
+    'venezuela', 'carabobo', 'valencia venezuela',
+    'airport', 'aeropuerto', 'plane', 'avion', 'avión',
+    'metro', 'subway', 'bus', 'autobus', 'autobús'
+  ];
 
   const now = new Date();
   const minutesSinceEpoch = Math.floor(now.getTime() / 60000);
@@ -64,10 +73,23 @@ async function fetchImage() {
     const hits = Array.isArray(data.hits) ? data.hits : [];
     console.error(`  Pixabay: "${keywords}" page ${page}, ${hits.length} hits`);
 
-    if (hits.length === 0) return null;
+    // Filter out blacklisted images
+    const filtered = hits.filter(img => {
+      const haystack = [
+        img.tags || '',
+        img.user || '',
+        img.pageURL || ''
+      ].join(' ').toLowerCase();
 
-    const idx = minutesSinceEpoch % hits.length;
-    const img = hits[idx];
+      return !BLACKLIST.some(term => haystack.includes(term));
+    });
+
+    console.error(`  Pixabay: ${filtered.length} hits after blacklist`);
+
+    if (filtered.length === 0) return null;
+
+    const idx = minutesSinceEpoch % filtered.length;
+    const img = filtered[idx];
 
     return {
       url: img.webformatURL,
