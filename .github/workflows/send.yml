@@ -19,73 +19,31 @@ jobs:
       - name: Fetch weather
         run: node weather.js > weather.json || echo '[]' > weather.json
 
-      - name: Test GVA with curl
-        run: |
-          echo "=== curl test ==="
-          curl -sI -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/128.0 Safari/537.36" \
-            --max-time 15 \
-            https://comunica.gva.es/es/totes | head -10
-          echo ""
-          echo "=== curl exit code: $? ==="
+      - name: Fetch Valencia news
+        run: node valencia.js > valencia.json || echo '[]' > valencia.json
 
       - name: Fetch GVA lead
         env:
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
         run: node fetch-lead.js > lead.json || echo '{}' > lead.json
 
-      - name: Fetch Valencia news
-        run: node valencia.js > valencia.json || echo '[]' > valencia.json
-      - name: Show valencia.json
-        run: cat valencia.json
-
       - name: Fetch Alicante news
         run: node alicante.js > alicante.json || echo '[]' > alicante.json
-      - name: Show alicante.json
-        run: cat alicante.json
 
       - name: Fetch Castellón news
         run: node castellon.js > castellon.json || echo '[]' > castellon.json
-      - name: Show castellon.json
-        run: cat castellon.json
 
       - name: Fetch Region news
         run: node region.js > region.json || echo '[]' > region.json
-      - name: Show region.json
-        run: cat region.json
+
+      - name: Fetch International view
+        run: node international.js > international.json || echo '[]' > international.json
 
       - name: Fetch Sport
         run: node sport.js > sport.json || echo '[]' > sport.json
 
-      - name: Show sport.json
-        run: cat sport.json
-
-      - name: Cache AEAT calendars
-        id: cache-aeat
-        uses: actions/cache@v4
-        with:
-          path: |
-            aeat-declaraciones.ics
-            aeat-cuenta-corriente.ics
-          key: aeat-calendar-${{ github.run_id }}
-          restore-keys: |
-            aeat-calendar-
-
-      - name: Download AEAT calendars
-        if: steps.cache-aeat.outputs.cache-hit != 'true'
-        run: |
-          curl -sL "https://www.google.com/calendar/ical/hqp9h5ft4snag42aea96791g28%40group.calendar.google.com/public/basic.ics" -o aeat-declaraciones.ics
-          curl -sL "https://www.google.com/calendar/ical/jaktdfpo1d6frode4enl3of2jk%40group.calendar.google.com/public/basic.ics" -o aeat-cuenta-corriente.ics
-
       - name: Fetch Admin deadlines
         run: node admin.js > admin.json || echo '[]' > admin.json
-
-      - name: Show admin.json
-        run: cat admin.json
-
-      - name: Fetch International view
-        run: node international.js > international.json || echo '[]' > international.json
-      - name: Show international.json
-        run: cat international.json
 
       - name: Translate headlines
         env:
