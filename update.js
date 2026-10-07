@@ -132,7 +132,7 @@ if (leadNews && leadNews.title) {
   html = replaceById(html, 'lead-story',
     `${imageHtml}
      <h2>${esc(leadNews.title)}</h2>
-     <span class="src"><a href="${esc(leadNews.url)}" target="_blank" rel="noopener">Source: Generalitat Valenciana · ${stamp}</a></span>`
+     <span class="src"><a href="${esc(leadNews.url)}" target="_blank" rel="noopener">Source: ${esc(leadNews.source || 'Generalitat Valenciana')} · ${stamp}</a></span>`
   );
 }
 
