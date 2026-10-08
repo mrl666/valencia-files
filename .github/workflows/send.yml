@@ -25,6 +25,7 @@ jobs:
       - name: Fetch GVA lead
         env:
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+          SCRAPINGANT_API_KEY: ${{ secrets.SCRAPINGANT_API_KEY }}
         run: node fetch-lead.js > lead.json || echo '{}' > lead.json
 
       - name: Fetch Alicante news
