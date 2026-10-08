@@ -32,6 +32,8 @@ jobs:
         run: node alicante.js > alicante.json || echo '[]' > alicante.json
 
       - name: Fetch Castellón news
+        env:
+          SCRAPINGANT_API_KEY: ${{ secrets.SCRAPINGANT_API_KEY }}
         run: node castellon.js > castellon.json || echo '[]' > castellon.json
 
       - name: Fetch Region news
