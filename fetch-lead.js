@@ -42,7 +42,8 @@ async function fetchImage() {
     'valencia turia river',
     'valencia central market',
     'valencia old town',
-    'valencia paella'
+    'valencia paella',
+    'valencia albufera'
   ];
 
   // Reject anything whose tags or user contain these terms
@@ -103,20 +104,34 @@ async function fetchImage() {
 }
 
 // --- GVA: top headline ---
+// --- GVA: top headline (via ScrapingAnt proxy) ---
 async function fetchGvaLead() {
+  const SCRAPINGANT_API_KEY = process.env.SCRAPINGANT_API_KEY;
+
+  if (!SCRAPINGANT_API_KEY) {
+    console.error('  GVA: no SCRAPINGANT_API_KEY, skipping');
+    return null;
+  }
+
   try {
-    const res = await testFetch('GVA', GVA_URL, {
-      headers: {
-        'User-Agent': UA,
-        'Accept': 'text/html,application/xhtml+xml',
-        'Accept-Language': 'es-ES,es;q=0.9'
-      },
-      redirect: 'follow'
+    const params = new URLSearchParams({
+      url: GVA_URL,
+      browser: 'true',
+      timeout: '60'
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const res = await testFetch('GVA via ScrapingAnt', 
+      `https://api.scrapingant.com/v2/general?${params}`, 
+      { headers: { 'x-api-key': SCRAPINGANT_API_KEY } }
+    );
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      throw new Error(`HTTP ${res.status} — ${body.slice(0, 200)}`);
+    }
 
     const html = await res.text();
-    console.error(`  GVA: ${html.length} bytes of HTML`);
+    console.error(`  GVA: ${html.length} bytes of rendered HTML`);
 
     const linkRe = /<a[^>]+href="([^"]*(?:detalle|noticia)[^"]*)"[^>]*>([\s\S]*?)<\/a>/g;
     let match;
@@ -133,7 +148,7 @@ async function fetchGvaLead() {
       return lead;
     }
 
-    console.error('  GVA: no news link matched');
+    console.error('  GVA: no news link matched in rendered HTML');
     return null;
   } catch (e) {
     console.error(`  GVA: failed — ${e.message}`);
