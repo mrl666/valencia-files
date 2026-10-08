@@ -6,6 +6,7 @@
     "pdf": "node pdf.js"
   },
   "dependencies": {
-    "html-pdf-lite": "^1.0.0"
+    "html-pdf-lite": "^1.0.0",
+    "pdf-lib": "^1.17.1"
   }
 }
