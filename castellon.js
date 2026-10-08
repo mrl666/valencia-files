@@ -1,63 +1,98 @@
-// Scrape Diputació de Castelló news
-// Source: https://www.dipcas.es/es/actualidad/
-// Uses Open Graph metadata — robust against CSS changes.
+// Castellón city news — scraped via ScrapingAnt (JS rendering required).
+// Source: https://www.castello.es/es/noticies
+// Structure: <li class="three-columns-news__item"> with <a><h3>Title</h3></a> and <p class="...date">DD/MM/YYYY</p>
 
-const BASE = 'https://www.dipcas.es';
-const LIST_URL = 'https://www.dipcas.es/es/actualidad/';
+const SCRAPINGANT_API_KEY = process.env.SCRAPINGANT_API_KEY;
+const TARGET_URL = 'https://www.castello.es/es/noticies';
+const BASE = 'https://www.castello.es';
+
+function cleanTitle(raw) {
+  return String(raw || '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&#8217;/g, '’')
+    .replace(/&#8211;/g, '–')
+    .replace(/&#039;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+async function fetchCastellon() {
+  if (!SCRAPINGANT_API_KEY) {
+    throw new Error('No SCRAPINGANT_API_KEY');
+  }
+
+  const params = new URLSearchParams({
+    url: TARGET_URL,
+    browser: 'true',
+    wait_for_selector: '.three-columns-news__item',
+    timeout: '60'
+  });
+
+  const res = await fetch(`https://api.scrapingant.com/v2/general?${params}`, {
+    headers: { 'x-api-key': SCRAPINGANT_API_KEY }
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`ScrapingAnt HTTP ${res.status} — ${body.slice(0, 200)}`);
+  }
+
+  return res.text();
+}
 
 async function run() {
   console.error('castellon.js starting…');
 
-  const res = await fetch(LIST_URL, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36',
-      'Accept': 'text/html,application/xhtml+xml',
-      'Accept-Language': 'es-ES,es;q=0.9'
-    }
-  });
-  if (!res.ok) throw new Error(`dipcas HTTP ${res.status}`);
-  const html = await res.text();
+  let html = '';
+  try {
+    html = await fetchCastellon();
+    console.error(`  Rendered HTML: ${html.length} bytes`);
+  } catch (e) {
+    console.error(`  Fetch failed: ${e.message}`);
+    console.log('[]');
+    return;
+  }
 
   const items = [];
   const seen = new Set();
 
-  // Find every news item by its og:url, then pick up the surrounding metadata.
-  // Pattern: <meta property="og:url" content="..."> near og:title, og:description, og:image.
-  const itemRe = /<meta\s+property="og:url"\s+content="([^"]+)"[\s\S]{0,4000}?<meta\s+property="og:title"\s+content="([^"]+)"[\s\S]{0,2000}?<meta\s+property="og:description"\s+content="([^"]*)"[\s\S]{0,2000}?<meta\s+property="og:image"\s+content="([^"]*)"/g;
+  const itemRe = /<a[^>]+href="([^"]+)"[^>]*>\s*<h3>([\s\S]*?)<\/h3>\s*<\/a>([\s\S]{0,800}?)<p[^>]*class="[^"]*three-columns-news__item__date[^"]*"[^>]*>\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/g;
 
   let m;
   while ((m = itemRe.exec(html)) !== null) {
     const url = m[1];
-    const title = m[2].replace(/\s+/g, ' ').trim();
-    const summary = m[3].replace(/\s+/g, ' ').trim();
-    const image = m[4];
-
-    if (!url || !title || title.length < 10) continue;
     if (seen.has(url)) continue;
 
-    // Skip the site-wide "homepage" og:url
-    if (url === 'https://www.dipcas.es//es/actualidad/') continue;
+    const title = cleanTitle(m[2]);
+    if (!title || title.length < 12) continue;
 
-    const id = url.split('/').filter(Boolean).pop() || url;
+    const day = String(m[4]).padStart(2, '0');
+    const month = String(m[5]).padStart(2, '0');
+    const year = m[6];
+    const date = `${year}-${month}-${day}`;
+
+    const id = `castello-${url.split('/').filter(Boolean).pop() || url}`;
     seen.add(url);
-
     items.push({
       id,
       title,
-      summary,
       url: url.startsWith('http') ? url : BASE + url,
-      image: image || null,
-      date: '' // dipcas doesn't expose a clean date in og tags; leave empty for now
+      date,
+      town: 'Castelló',
+      sourceLabel: 'Ajuntament de Castelló'
     });
   }
 
   console.error(`castellon.js extracted ${items.length} items`);
-  console.log(JSON.stringify(items.slice(0, 20)));
+  console.log(JSON.stringify(items.slice(0, 15)));
 }
 
 run()
   .then(() => console.error('castellon.js finished OK'))
   .catch(err => {
-    console.error('dipcas scrape error:', err.message);
-    process.exit(1);
+    console.error('Castellón scrape error:', err.message);
+    console.log('[]');
+    process.exit(0);
   });
