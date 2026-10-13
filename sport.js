@@ -1,23 +1,23 @@
-// Sport scraper — openfootball/football.json (public domain, no API key)
-// Datasets:
-//   es.1 2026-27 — La Liga (Valencia, Villarreal, Levante)
-//   es.2 2025-26 — Segunda División (Castellón, last available season)
+// Sport scraper — openfootball/espana (public domain, no API key)
+// Sources:
+//   2026-27/1-liga.json  — La Liga (Valencia, Villarreal, Levante)
+//   2026-27/2-liga.json  — Segunda División (Castellón, if published)
 
-const BASE = 'https://raw.githubusercontent.com/openfootball/football.json/master';
+const BASE = 'https://raw.githubusercontent.com/openfootball/espana/master';
 
 const TEAMS = [
-  { id: 'valencia',   name: 'Valencia CF',   dataset: 'es.1', season: '2026-27' },
-  { id: 'villarreal', name: 'Villarreal CF', dataset: 'es.1', season: '2026-27' },
-  { id: 'levante',    name: 'Levante UD',    dataset: 'es.1', season: '2026-27' },
-  { id: 'castellon',  name: 'CD Castellón',  aliases: ['CD Castellón', 'Castellón'], dataset: 'es.2', season: '2025-26' }
+  { id: 'valencia',   name: 'Valencia CF',   dataset: '1-liga', season: '2026-27' },
+  { id: 'villarreal', name: 'Villarreal CF', dataset: '1-liga', season: '2026-27' },
+  { id: 'levante',    name: 'Levante UD',    dataset: '1-liga', season: '2026-27' },
+  { id: 'castellon',  name: 'CD Castellón',  aliases: ['CD Castellón', 'Castellón'], dataset: '2-liga', season: '2026-27' }
 ];
 
-async function fetchDataset(code, season) {
-  const url = `${BASE}/${season}/${code}.json`;
+async function fetchDataset(dataset, season) {
+  const url = `${BASE}/${season}/${dataset}.json`;
   const res = await fetch(url, {
     headers: { 'User-Agent': 'ValenciaFiles/1.0 (+github.com/mrl666/valencia-files)' }
   });
-  if (!res.ok) throw new Error(`${code} HTTP ${res.status}`);
+  if (!res.ok) throw new Error(`${dataset} HTTP ${res.status}`);
   return res.json();
 }
 
@@ -26,7 +26,10 @@ function extractResults(dataset, team) {
   const matches = dataset.matches || [];
 
   const played = matches.filter(m => {
-    if (!m.score || !m.score.ft) return false;
+    if (!m.score) return false;
+    // Score can be an object with .ft, or a plain array [home, away]
+    const hasScore = Array.isArray(m.score) || (m.score.ft && m.score.ft.length === 2);
+    if (!hasScore) return false;
     return names.includes(m.team1) || names.includes(m.team2);
   });
 
@@ -35,9 +38,19 @@ function extractResults(dataset, team) {
   return played.slice(0, 3).map(m => {
     const home = names.includes(m.team1);
     const opponent = home ? m.team2 : m.team1;
+
+    // Normalise score to [homeGoals, awayGoals]
+    let homeGoals, awayGoals;
+    if (Array.isArray(m.score)) {
+      [homeGoals, awayGoals] = m.score;
+    } else {
+      [homeGoals, awayGoals] = m.score.ft;
+    }
+
     const score = home
-      ? `${m.score.ft[0]}-${m.score.ft[1]}`
-      : `${m.score.ft[1]}-${m.score.ft[0]}`;
+      ? `${homeGoals}-${awayGoals}`
+      : `${awayGoals}-${homeGoals}`;
+
     return { opponent, score, home, date: m.date || '' };
   });
 }
