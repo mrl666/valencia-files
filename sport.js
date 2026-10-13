@@ -3,13 +3,13 @@
 //   2026-27/1-liga.json  — La Liga (Valencia, Villarreal, Levante)
 //   2026-27/2-liga.json  — Segunda División (Castellón, if published)
 
-const BASE = 'https://raw.githubusercontent.com/openfootball/espana/master';
+const BASE = 'https://raw.githubusercontent.com/openfootball/football.json/master';
 
 const TEAMS = [
-  { id: 'valencia',   name: 'Valencia CF',   dataset: '1-liga', season: '2026-27' },
-  { id: 'villarreal', name: 'Villarreal CF', dataset: '1-liga', season: '2026-27' },
-  { id: 'levante',    name: 'Levante UD',    dataset: '1-liga', season: '2026-27' },
-  { id: 'castellon',  name: 'CD Castellón',  aliases: ['CD Castellón', 'Castellón'], dataset: '2-liga', season: '2026-27' }
+  { id: 'valencia',   name: 'Valencia CF',   dataset: 'es.1', season: '2026-27' },
+  { id: 'villarreal', name: 'Villarreal CF', dataset: 'es.1', season: '2026-27' },
+  { id: 'levante',    name: 'Levante UD',    dataset: 'es.1', season: '2026-27' },
+  { id: 'castellon',  name: 'CD Castellón',  dataset: 'es.2', season: '2025-26' }
 ];
 
 async function fetchDataset(dataset, season) {
