@@ -1,17 +1,46 @@
 // Lead + image fetcher for Valencia Files.
 //
 // Priority chain for the lead:
-//   1. GVA (comunica.gva.es) — preferred source, but often blocked from GitHub Actions
-//   2. valencia.json — top story from Ajuntament de València (already scraped/translated)
-//   3. Previous lead.json — keep the last good lead rather than blank it
-//   4. {} — page keeps the last lead visible in index.html
+//   1. lead-manual.json — manual override for special cases
+//   2. GVA (comunica.gva.es) — preferred source, currently blocked from GitHub
+//   3. valencia.json — top story from Ajuntament de València
+//   4. Previous lead.json — keep the last good lead
+//   5. {} — page keeps the last lead visible in index.html
 //
-// The Pixabay image always attaches to whichever lead wins.
+// Image: rotates through 5 hand-picked Valencia photos stored in the repo.
 
 const fs = require('fs');
 
 const GVA_URL = 'https://comunica.gva.es/es/totes';
 const UA = 'Mozilla/5.0 (compatible; ValenciaFiles/1.0; +https://github.com/mrl666/valencia-files)';
+
+const LEAD_IMAGES = [
+  {
+    file: '1.jpg',
+    credit: 'Photo by papagnoc on Pixabay',
+    sourceUrl: 'https://pixabay.com/photos/valencia-spain-calatrava-sunset-1049389/'
+  },
+  {
+    file: '2.jpg',
+    credit: 'Photo by [author] on Pixabay',
+    sourceUrl: 'https://pixabay.com/photos/architecture-modern-symmetry-10265145/'
+  },
+  {
+    file: '3.jpg',
+    credit: 'Photo by [author] on Pixabay',
+    sourceUrl: 'https://pixabay.com/photos/architecture-modern-clouds-science-10265095/'
+  },
+  {
+    file: '4.jpg',
+    credit: 'Photo by [author] on Pixabay',
+    sourceUrl: 'https://pixabay.com/photos/building-queen-sofia-palace-of-arts-7300734/'
+  },
+  {
+    file: '5.jpg',
+    credit: 'Photo by [author] on Pixabay',
+    sourceUrl: 'https://pixabay.com/photos/valencia-spain-architecture-4595268/'
+  }
+];
 
 async function testFetch(label, url, options = {}) {
   try {
@@ -24,39 +53,10 @@ async function testFetch(label, url, options = {}) {
   }
 }
 
-// --- Pixabay: rotating Valencia image ---
-const LEAD_IMAGES = [
-  {
-    file: '1.jpg',
-    credit: 'Photo by papagnoc on Pixabay',
-    sourceUrl: 'https://pixabay.com/photos/valencia-spain-calatrava-sunset-1049389/'
-  },
-  {
-    file: '2.jpg',
-    credit: 'Photo by ELG21 on Pixabay',
-    sourceUrl: 'https://pixabay.com/photos/architecture-modern-symmetry-10265145/'
-  },
-  {
-    file: '3.jpg',
-    credit: 'Photo by ELG21 on Pixabay',
-    sourceUrl: 'https://pixabay.com/photos/architecture-modern-clouds-science-10265095/'
-  },
-  {
-    file: '4.jpg',
-    credit: 'Photo by AMDUMA on Pixabay',
-    sourceUrl: 'https://pixabay.com/photos/building-queen-sofia-palace-of-arts-7300734/'
-  },
-  {
-    file: '5.jpg',
-    credit: 'Photo by AG-Pics on Pixabay',
-    sourceUrl: 'https://pixabay.com/photos/valencia-spain-architecture-4595268/'
-  }
-];
-
+// --- Rotating image from the local repo ---
 function fetchImage() {
   if (LEAD_IMAGES.length === 0) return null;
 
-  // Rotate by hour — each edition gets the next image in the list
   const hoursSinceEpoch = Math.floor(Date.now() / 3600000);
   const pick = LEAD_IMAGES[hoursSinceEpoch % LEAD_IMAGES.length];
 
@@ -67,35 +67,35 @@ function fetchImage() {
   };
 }
 
-// --- GVA: top headline ---
-// --- GVA: top headline (via ScrapingAnt proxy) ---
-async function fetchGvaLead() {
-  const SCRAPINGANT_API_KEY = process.env.SCRAPINGANT_API_KEY;
-
-  if (!SCRAPINGANT_API_KEY) {
-    console.error('  GVA: no SCRAPINGANT_API_KEY, skipping');
-    return null;
-  }
-
+// --- Manual override ---
+function fetchManualLead() {
   try {
-    const params = new URLSearchParams({
-      url: GVA_URL,
-      browser: 'true',
-      timeout: '60'
-    });
-
-    const res = await testFetch('GVA via ScrapingAnt', 
-      `https://api.scrapingant.com/v2/general?${params}`, 
-      { headers: { 'x-api-key': SCRAPINGANT_API_KEY } }
-    );
-
-    if (!res.ok) {
-      const body = await res.text().catch(() => '');
-      throw new Error(`HTTP ${res.status} — ${body.slice(0, 200)}`);
+    const manual = JSON.parse(fs.readFileSync('lead-manual.json', 'utf8'));
+    if (manual && manual.title) {
+      console.error(`  Using MANUAL lead: "${manual.title.slice(0, 80)}"`);
+      return manual;
     }
+  } catch (e) {
+    // No manual lead
+  }
+  return null;
+}
+
+// --- GVA: top headline ---
+async function fetchGvaLead() {
+  try {
+    const res = await testFetch('GVA', GVA_URL, {
+      headers: {
+        'User-Agent': UA,
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Language': 'es-ES,es;q=0.9'
+      },
+      redirect: 'follow'
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const html = await res.text();
-    console.error(`  GVA: ${html.length} bytes of rendered HTML`);
+    console.error(`  GVA: ${html.length} bytes of HTML`);
 
     const linkRe = /<a[^>]+href="([^"]*(?:detalle|noticia)[^"]*)"[^>]*>([\s\S]*?)<\/a>/g;
     let match;
@@ -112,7 +112,7 @@ async function fetchGvaLead() {
       return lead;
     }
 
-    console.error('  GVA: no news link matched in rendered HTML');
+    console.error('  GVA: no news link matched');
     return null;
   } catch (e) {
     console.error(`  GVA: failed — ${e.message}`);
@@ -156,21 +156,26 @@ function fetchPreviousLead() {
 async function run() {
   console.error('fetch-lead.js starting…');
 
-  // 1. Try GVA first
-  let lead = await fetchGvaLead();
+  // 1. Manual override
+  let lead = fetchManualLead();
 
-  // 2. Fall back to valencia.json
+  // 2. GVA
+  if (!lead) {
+    lead = await fetchGvaLead();
+  }
+
+  // 3. valencia.json fallback
   if (!lead) {
     lead = fetchFallbackLead();
   }
 
-  // 3. Fall back to the previous lead.json
+  // 4. Previous lead.json
   if (!lead) {
     lead = fetchPreviousLead();
   }
 
-  // 4. Fetch a fresh Pixabay image regardless
-  const image = await fetchImage();
+  // 5. Fresh image from the local rotation
+  const image = fetchImage();
 
   if (!lead) {
     console.error('fetch-lead.js: no lead available from any source — writing {}');
@@ -180,7 +185,7 @@ async function run() {
 
   if (image) {
     lead.image = image;
-    console.error(`  Image attached: ${image.url.slice(0, 60)}…`);
+    console.error(`  Image attached: ${image.url}`);
   }
 
   console.error(`fetch-lead.js finished OK (source: ${lead.source || 'unknown'})`);
@@ -190,5 +195,5 @@ async function run() {
 run().catch(err => {
   console.error('Lead fetch error:', err.message);
   console.log('{}');
-  process.exit(0); // never fail the pipeline over a missing lead
+  process.exit(0);
 });
