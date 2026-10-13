@@ -33,7 +33,7 @@ const LEAD_IMAGES = [
   },
   {
     file: '2.jpg',
-    credit: 'Photo by Tama66 on Pixabay',
+    credit: 'Photo by ELG21 on Pixabay',
     sourceUrl: 'https://pixabay.com/photos/architecture-modern-symmetry-10265145/'
   },
   {
