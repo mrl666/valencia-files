@@ -27,80 +27,46 @@ async function testFetch(label, url, options = {}) {
 }
 
 // --- Pixabay: rotating Valencia image ---
-async function fetchImage() {
-  if (!PIXABAY_API_KEY) {
-    console.error('  Pixabay: no API key, skipping');
-    return null;
+const LEAD_IMAGES = [
+  {
+    file: '1.jpg',
+    credit: 'Photo by papagnoc on Pixabay',
+    sourceUrl: 'https://pixabay.com/photos/valencia-spain-calatrava-sunset-1049389/'
+  },
+  {
+    file: '2.jpg',
+    credit: 'Photo by [author] on Pixabay',
+    sourceUrl: 'https://pixabay.com/photos/architecture-modern-symmetry-10265145/'
+  },
+  {
+    file: '3.jpg',
+    credit: 'Photo by [author] on Pixabay',
+    sourceUrl: 'https://pixabay.com/photos/architecture-modern-clouds-science-10265095/'
+  },
+  {
+    file: '4.jpg',
+    credit: 'Photo by [author] on Pixabay',
+    sourceUrl: 'https://pixabay.com/photos/building-queen-sofia-palace-of-arts-7300734/'
+  },
+  {
+    file: '5.jpg',
+    credit: 'Photo by [author] on Pixabay',
+    sourceUrl: 'https://pixabay.com/photos/valencia-spain-architecture-4595268/'
   }
+];
 
-  // Landmark-specific keywords — these won't match generic "valencia" content
-  const KEYWORD_SETS = [
-    'ciudad de las artes valencia',
-    'valencia fallas',
-    'valencia cathedral',
-    'valencia malvarrosa beach',
-    'valencia turia river',
-    'valencia central market',
-    'valencia old town',
-    'valencia paella',
-    'valencia albufera'
-  ];
+function fetchImage() {
+  if (LEAD_IMAGES.length === 0) return null;
 
-  // Reject anything whose tags or user contain these terms
-  const BLACKLIST = [
-    'renfe', 'train', 'tren', 'station', 'estacion', 'estación',
-    'venezuela', 'carabobo', 'valencia venezuela',
-    'airport', 'aeropuerto', 'plane', 'avion', 'avión',
-    'metro', 'subway', 'bus', 'autobus', 'autobús'
-  ];
+  // Rotate by hour — each edition gets the next image in the list
+  const hoursSinceEpoch = Math.floor(Date.now() / 3600000);
+  const pick = LEAD_IMAGES[hoursSinceEpoch % LEAD_IMAGES.length];
 
-  const now = new Date();
-  const minutesSinceEpoch = Math.floor(now.getTime() / 60000);
-  const hoursSinceEpoch = Math.floor(now.getTime() / 3600000);
-
-  const keywords = KEYWORD_SETS[hoursSinceEpoch % KEYWORD_SETS.length];
-  const page = (minutesSinceEpoch % 20) + 1;
-
-  const url = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}` +
-              `&q=${encodeURIComponent(keywords)}` +
-              `&image_type=photo&orientation=horizontal&per_page=20` +
-              `&safesearch=true&page=${page}`;
-
-  try {
-    const res = await testFetch('Pixabay', url);
-    if (!res.ok) return null;
-
-    const data = await res.json();
-    const hits = Array.isArray(data.hits) ? data.hits : [];
-    console.error(`  Pixabay: "${keywords}" page ${page}, ${hits.length} hits`);
-
-    // Filter out blacklisted images
-    const filtered = hits.filter(img => {
-      const haystack = [
-        img.tags || '',
-        img.user || '',
-        img.pageURL || ''
-      ].join(' ').toLowerCase();
-
-      return !BLACKLIST.some(term => haystack.includes(term));
-    });
-
-    console.error(`  Pixabay: ${filtered.length} hits after blacklist`);
-
-    if (filtered.length === 0) return null;
-
-    const idx = minutesSinceEpoch % filtered.length;
-    const img = filtered[idx];
-
-    return {
-      url: img.webformatURL,
-      credit: `Photo by ${img.user} on Pixabay`,
-      sourceUrl: img.pageURL
-    };
-  } catch (e) {
-    console.error(`  Pixabay: skipped — ${e.message}`);
-    return null;
-  }
+  return {
+    url: `https://mrl666.github.io/valencia-files/images/lead/${pick.file}`,
+    credit: pick.credit,
+    sourceUrl: pick.sourceUrl
+  };
 }
 
 // --- GVA: top headline ---
