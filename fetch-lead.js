@@ -10,8 +10,6 @@
 
 const fs = require('fs');
 
-const PIXABAY_API_KEY = process.env.PIXABAY_API_KEY;
-
 const GVA_URL = 'https://comunica.gva.es/es/totes';
 const UA = 'Mozilla/5.0 (compatible; ValenciaFiles/1.0; +https://github.com/mrl666/valencia-files)';
 
@@ -35,22 +33,22 @@ const LEAD_IMAGES = [
   },
   {
     file: '2.jpg',
-    credit: 'Photo by [author] on Pixabay',
+    credit: 'Photo by Tama66 on Pixabay',
     sourceUrl: 'https://pixabay.com/photos/architecture-modern-symmetry-10265145/'
   },
   {
     file: '3.jpg',
-    credit: 'Photo by [author] on Pixabay',
+    credit: 'Photo by ELG21 on Pixabay',
     sourceUrl: 'https://pixabay.com/photos/architecture-modern-clouds-science-10265095/'
   },
   {
     file: '4.jpg',
-    credit: 'Photo by [author] on Pixabay',
+    credit: 'Photo by AMDUMA on Pixabay',
     sourceUrl: 'https://pixabay.com/photos/building-queen-sofia-palace-of-arts-7300734/'
   },
   {
     file: '5.jpg',
-    credit: 'Photo by [author] on Pixabay',
+    credit: 'Photo by AG-Pics on Pixabay',
     sourceUrl: 'https://pixabay.com/photos/valencia-spain-architecture-4595268/'
   }
 ];
