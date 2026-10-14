@@ -7,6 +7,8 @@
 //   - Sagunt   https://aytosagunto.es/va/actualitat/
 //   - Xàtiva   https://www.xativa.es/es/noticias
 
+const fs = require('fs');
+
 const SOURCES = [
   { name: 'Aspe',    url: 'https://aspe.es/feed/',                 label: 'Ayuntamiento de Aspe',   type: 'rss'  },
   { name: 'Torrent', url: 'https://www.torrent.es/feed/',          label: 'Ajuntament de Torrent',  type: 'rss'  },
