@@ -41,7 +41,7 @@ jobs:
       - name: Fetch Region news
         run: node region.js > region.json || echo '[]' > region.json
 
-       - name: Fetch Events
+      - name: Fetch Events
         run: node events.js > events.json || echo '[]' > events.json
 
       - name: Show events.json
