@@ -35,6 +35,9 @@ jobs:
           SCRAPINGANT_API_KEY: ${{ secrets.SCRAPINGANT_API_KEY }}
         run: node castellon.js > castellon.json || echo '[]' > castellon.json
 
+      - name: Fetch IVACE news
+        run: node ivace.js > ivace.json || echo '[]' > ivace.json
+
       - name: Fetch Region news
         run: node region.js > region.json || echo '[]' > region.json
 
@@ -46,9 +49,6 @@ jobs:
 
       - name: Fetch Admin deadlines
         run: node admin.js > admin.json || echo '[]' > admin.json
-
-      - name: Fetch IVACE news
-        run: node ivace.js > ivace.json || echo '[]' > ivace.json
 
       - name: Show ivace.json
         run: cat ivace.json
