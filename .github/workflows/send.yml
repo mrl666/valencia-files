@@ -47,6 +47,12 @@ jobs:
       - name: Fetch Admin deadlines
         run: node admin.js > admin.json || echo '[]' > admin.json
 
+      - name: Fetch IVACE news
+        run: node ivace.js > ivace.json || echo '[]' > ivace.json
+
+      - name: Show ivace.json
+        run: cat ivace.json
+
       - name: Translate headlines
         env:
           DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
