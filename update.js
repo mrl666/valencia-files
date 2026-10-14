@@ -22,7 +22,8 @@ try {
       castellon: Array.isArray(parsed.castellon) ? parsed.castellon : [],
       region: Array.isArray(parsed.region) ? parsed.region : [],
       international: Array.isArray(parsed.international) ? parsed.international : [],
-      admin: Array.isArray(parsed.admin) ? parsed.admin : []
+      admin: Array.isArray(parsed.admin) ? parsed.admin : [],
+      events: Array.isArray(parsed.events) ? parsed.events : []
     };
   }
 } catch (e) {
@@ -78,6 +79,9 @@ try {
 
 // --- Load Admin deadlines ---
 const adminDeadlines = Array.isArray(translated.admin) ? translated.admin : [];
+
+// --- Load turisme.dival.es/agenda ---
+const eventPool = Array.isArray(translated.events) ? translated.events : [];
 
 // --- Helpers ---
 function replaceById(html, id, newInner) {
