@@ -192,6 +192,19 @@ if (regionPool.length >= 1) {
   html = replaceById(html, 'region-stories', htmlList);
 }
 
+// --- Inject Events ---
+if (eventPool.length > 0) {
+  const picks = shuffle(eventPool, seed + 41).slice(0, 3);
+  const htmlList = picks.map(item =>
+    `<li>
+      <h3><a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.title)}</a></h3>
+      ${item.description ? `<p>${esc(item.description.slice(0, 200))}${item.description.length > 200 ? '…' : ''}</p>` : ''}
+      <span class="src">${esc(item.date || '')} · Source: Diputació de València — Agenda</span>
+    </li>`
+  ).join('');
+  html = replaceById(html, 'events-stories', htmlList);
+}
+
 // --- Inject thought ---
 if (thought) {
   html = replaceById(html, 'thought-block',
