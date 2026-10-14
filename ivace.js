@@ -1,14 +1,10 @@
 // IVACE — Instituto Valenciano de Competitividad Empresarial
-// Source: https://innovacion.ivace.es/index.php/es/noticias/notas-de-prensa
-// Output: ivace.json in the same shape as region items.
+// Uses the Joomla RSS feed exposed on the news listing page.
 
-const BASE = 'https://innovacion.ivace.es';
-const LIST_URL = 'https://innovacion.ivace.es/index.php/es/noticias/notas-de-prensa';
+const FEED_URL = 'https://innovacion.ivace.es/index.php/es/noticias/notas-de-prensa?format=feed&type=rss';
 
 function cleanTitle(raw) {
   return String(raw || '')
-    .replace(/<br\s*\/?>/gi, ' ')
-    .replace(/<\/p>/gi, ' ')
     .replace(/<[^>]+>/g, '')
     .replace(/&amp;/g, '&')
     .replace(/&#8217;/g, '’')
@@ -23,66 +19,51 @@ function cleanTitle(raw) {
 async function run() {
   console.error('ivace.js starting…');
 
-  const res = await fetch(LIST_URL, {
+  const res = await fetch(FEED_URL, {
     headers: {
       'User-Agent': 'Mozilla/5.0 (compatible; ValenciaFiles/1.0; +https://github.com/mrl666/valencia-files)',
-      'Accept': 'text/html,application/xhtml+xml',
-      'Accept-Language': 'es-ES,es;q=0.9'
+      'Accept': 'application/rss+xml, application/xml, text/xml, */*'
     },
     redirect: 'follow'
   });
   if (!res.ok) throw new Error(`IVACE HTTP ${res.status}`);
-  const html = await res.text();
-  console.error(`  HTML length: ${html.length}`);
+  const xml = await res.text();
+  console.error(`  XML length: ${xml.length}`);
 
   const items = [];
   const seen = new Set();
-
-  // Pattern: anchor to a notas-de-prensa article URL, grab the title text,
-  // then look ahead for a date in DD-MM-YYYY or DD/MM/YYYY format.
-  const re = /<a[^>]+href="([^"]*notas-de-prensa[^"]*)"[^>]*>([\s\S]*?)<\/a>[\s\S]{0,600}?\((\d{1,2})[-\/](\d{1,2})[-\/](\d{4})\)/g;
+  const itemRe = /<item>([\s\S]*?)<\/item>/g;
 
   let m;
-  while ((m = re.exec(html)) !== null) {
-    const url = m[1];
+  while ((m = itemRe.exec(xml)) !== null) {
+    const block = m[1];
+    const titleMatch = block.match(/<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/);
+    const linkMatch  = block.match(/<link>([\s\S]*?)<\/link>/);
+    const dateMatch  = block.match(/<pubDate>([\s\S]*?)<\/pubDate>/);
+    if (!titleMatch || !linkMatch) continue;
+
+    const title = cleanTitle(titleMatch[1]);
+    if (!title || title.length < 15) continue;
+
+    const url = linkMatch[1].trim();
     if (seen.has(url)) continue;
 
-    const title = cleanTitle(m[2]);
-    if (!title || title.length < 20 || title.length > 220) continue;
-    if (/notas-de-prensa\/?$/.test(url)) continue; // skip the listing page itself
-
-    const day = String(m[3]).padStart(2, '0');
-    const month = String(m[4]).padStart(2, '0');
-    const year = m[5];
-    const date = `${year}-${month}-${day}`;
+    let date = '';
+    if (dateMatch) {
+      const d = new Date(dateMatch[1]);
+      if (!isNaN(d)) date = d.toISOString().slice(0, 10);
+    }
 
     const id = `ivace-${url.split('/').filter(Boolean).pop() || url}`;
     seen.add(url);
     items.push({
       id,
       title,
-      url: url.startsWith('http') ? url : BASE + url,
+      url,
       date,
       town: 'IVACE',
       sourceLabel: 'IVACE+i — Generalitat Valenciana'
     });
-  }
-
-    // Diagnostic: how many candidate links exist?
-  const nota = [...html.matchAll(/href="([^"]*notas-de-prensa[^"]*)"/g)];
-  console.error(`  Links matching "notas-de-prensa": ${nota.length}`);
-  if (nota.length > 0) console.error(`  First: ${nota[0][1]}`);
-
-  const dates = [...html.matchAll(/\((\d{1,2})[-\/](\d{1,2})[-\/](\d{4})\)/g)];
-  console.error(`  Dates in parens (DD-MM-YYYY): ${dates.length}`);
-  if (dates.length > 0) console.error(`  First: ${dates[0][0]}`);
-
-  // Show a sample of the HTML around the first "notas" link
-  const idx = html.indexOf('notas-de-prensa');
-  if (idx > 0) {
-    console.error(`  --- HTML sample around first match (500 chars) ---`);
-    console.error(html.slice(Math.max(0, idx - 200), idx + 300));
-    console.error(`  --- end sample ---`);
   }
 
   console.error(`ivace.js extracted ${items.length} items`);
@@ -94,5 +75,5 @@ run()
   .catch(err => {
     console.error('IVACE scrape error:', err.message);
     console.log('[]');
-    process.exit(0); // never break the pipeline
+    process.exit(0);
   });
