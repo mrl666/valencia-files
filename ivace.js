@@ -68,6 +68,23 @@ async function run() {
     });
   }
 
+    // Diagnostic: how many candidate links exist?
+  const nota = [...html.matchAll(/href="([^"]*notas-de-prensa[^"]*)"/g)];
+  console.error(`  Links matching "notas-de-prensa": ${nota.length}`);
+  if (nota.length > 0) console.error(`  First: ${nota[0][1]}`);
+
+  const dates = [...html.matchAll(/\((\d{1,2})[-\/](\d{1,2})[-\/](\d{4})\)/g)];
+  console.error(`  Dates in parens (DD-MM-YYYY): ${dates.length}`);
+  if (dates.length > 0) console.error(`  First: ${dates[0][0]}`);
+
+  // Show a sample of the HTML around the first "notas" link
+  const idx = html.indexOf('notas-de-prensa');
+  if (idx > 0) {
+    console.error(`  --- HTML sample around first match (500 chars) ---`);
+    console.error(html.slice(Math.max(0, idx - 200), idx + 300));
+    console.error(`  --- end sample ---`);
+  }
+
   console.error(`ivace.js extracted ${items.length} items`);
   console.log(JSON.stringify(items.slice(0, 15)));
 }
