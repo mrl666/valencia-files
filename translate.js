@@ -19,6 +19,7 @@ const castellon = loadJson('castellon.json') || [];
 const region = loadJson('region.json') || [];
 const international = loadJson('international.json') || [];
 const admin = loadJson('admin.json') || [];
+const events = loadJson('events.json') || [];
 
 // --- Load translation cache ---
 let cache = {};
@@ -88,6 +89,7 @@ collect(castellon);
 collect(region);
 collect(international);
 collect(admin);
+collect(events);
 
 const uniqueHeadlines = Array.from(toTranslate);
 
@@ -154,7 +156,8 @@ async function run() {
     castellon: castellon.map(applyTranslation),
     region: region.map(applyTranslation),
     international: international.map(applyTranslation),
-    admin: admin.map(applyTranslation)
+    admin: admin.map(applyTranslation),
+    events: events.map(applyTranslation)
   };
 
   console.log(JSON.stringify(output));
