@@ -2,8 +2,20 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://mrl666.github.io/valencia-files/</loc>
-    <lastmod>2026-09-30</lastmod>
+    <lastmod>2026-10-30</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://mrl666.github.io/valencia-files/about.html</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://mrl666.github.io/valencia-files/contact.html</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://mrl666.github.io/valencia-files/archive.html</loc>
+    <changefreq>weekly</changefreq>
   </url>
 </urlset>
