@@ -6,6 +6,7 @@
 //   - Novelda  https://www.novelda.es/feed/
 //   - Sagunt   https://aytosagunto.es/va/actualitat/
 //   - Xàtiva   https://www.xativa.es/es/noticias
+//   - IVACE    (merged from ivace.json)
 
 const fs = require('fs');
 
@@ -131,17 +132,6 @@ async function fetchHtmlSource(source) {
   return items;
 }
 
-  // Merge IVACE items (fetched separately)
-  try {
-    const ivace = JSON.parse(fs.readFileSync('ivace.json', 'utf8'));
-    if (Array.isArray(ivace)) {
-      all.push(...ivace);
-      console.error(`  IVACE: ${ivace.length} items merged`);
-    }
-  } catch (e) {
-    // No ivace.json, skip
-  }
-
 async function fetchFeed(source) {
   const res = await fetch(source.url, {
     headers: {
@@ -201,7 +191,18 @@ async function run() {
     }
   }
 
-  // Final safety filter — drop anything still suspicious
+  // 1. Merge IVACE items (fetched separately)
+  try {
+    const ivace = JSON.parse(fs.readFileSync('ivace.json', 'utf8'));
+    if (Array.isArray(ivace)) {
+      all.push(...ivace);
+      console.error(`  IVACE: ${ivace.length} items merged`);
+    }
+  } catch (e) {
+    console.error('  IVACE: no ivace.json found or error parsing');
+  }
+
+  // 2. Final safety filter — drop anything still suspicious
   const cleaned = all.filter(item => {
     if (!item.title) return false;
     if (item.title.length > 250) return false;
@@ -210,6 +211,7 @@ async function run() {
     return true;
   });
 
+  // 3. Sort and slice
   cleaned.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
   const pool = cleaned.slice(0, 80);
 
