@@ -195,13 +195,15 @@ if (regionPool.length >= 1) {
 // --- Inject Events ---
 if (eventPool.length > 0) {
   const picks = shuffle(eventPool, seed + 41).slice(0, 3);
-  const htmlList = picks.map(item =>
-    `<li>
+  const htmlList = picks.map(item => {
+    // Fallback to title_original if translation is missing, though it shouldn't be
+    const desc = item.description || '';
+    return `<li>
       <h3><a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.title)}</a></h3>
-      ${item.description ? `<p>${esc(item.description.slice(0, 200))}${item.description.length > 200 ? '…' : ''}</p>` : ''}
+      ${desc ? `<p>${esc(desc.slice(0, 200))}${desc.length > 200 ? '…' : ''}</p>` : ''}
       <span class="src">${esc(item.date || '')} · Source: Diputació de València — Agenda</span>
-    </li>`
-  ).join('');
+    </li>`;
+  }).join('');
   html = replaceById(html, 'events-stories', htmlList);
 }
 
