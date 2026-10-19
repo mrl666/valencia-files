@@ -76,6 +76,10 @@ function collect(items) {
       item.detail = decodeHtmlEntities(item.detail);
       if (!cache[item.detail]) toTranslate.add(item.detail);
     }
+    if (item.description) {
+      item.description = decodeHtmlEntities(item.description);
+      if (!cache[item.description]) toTranslate.add(item.description);
+    }
   });
 }
 
@@ -135,6 +139,10 @@ function applyTranslation(item) {
   if (item.detail && cache[item.detail]) {
     out.detail = cache[item.detail];
     out.detail_original = item.detail;
+  }
+  if (item.description && cache[item.description]) {
+    out.description = cache[item.description];
+    out.description_original = item.description;
   }
   return out;
 }
