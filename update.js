@@ -182,13 +182,32 @@ if (castellonPool.length >= 1) {
 
 // --- Inject Region stories ---
 if (regionPool.length >= 1) {
-  const picks = shuffle(regionPool, seed + 23).slice(0, 4);
+  const shuffled = shuffle(regionPool, seed + 23);
+  
+  // 1. Force one IVACE item if available
+  const ivaceItem = shuffled.find(item => item.sourceLabel && item.sourceLabel.includes('IVACE'));
+  
+  // 2. Filter out IVACE from the rest so we don't duplicate it
+  const otherItems = shuffled.filter(item => !item.sourceLabel || !item.sourceLabel.includes('IVACE'));
+  
+  // 3. Build the final selection: IVACE first (if found), then fill up to 4 items total with others
+  const picks = [];
+  if (ivaceItem) picks.push(ivaceItem);
+  
+  // Fill the remaining slots (up to 4 total)
+  for (const item of otherItems) {
+    if (picks.length >= 4) break;
+    picks.push(item);
+  }
+
+  // 4. Render the HTML
   const htmlList = picks.map(item =>
     `<li>
       <h3><a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.title)}</a></h3>
       <span class="src">Source: ${esc(item.sourceLabel || 'Ajuntament')} · ${esc(item.date || '')}</span>
     </li>`
   ).join('');
+  
   html = replaceById(html, 'region-stories', htmlList);
 }
 
