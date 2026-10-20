@@ -190,13 +190,12 @@ if (regionPool.length >= 1) {
   // 2. Filter out IVACE from the rest so we don't duplicate it
   const otherItems = shuffled.filter(item => !item.sourceLabel || !item.sourceLabel.includes('IVACE'));
   
-  // 3. Build the final selection: IVACE first (if found), then fill up to 4 items total with others
+  // 3. Build the final selection: IVACE first (if found), then fill up to 6 items total
   const picks = [];
   if (ivaceItem) picks.push(ivaceItem);
   
-  // Fill the remaining slots (up to 4 total)
   for (const item of otherItems) {
-    if (picks.length >= 4) break;
+    if (picks.length >= 6) break; // Increased from 4 to 6
     picks.push(item);
   }
 
