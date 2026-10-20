@@ -1,19 +1,13 @@
-// Castellón region scraper — combines news from Vinaròs, Benicarló, and Peñíscola.
-// Sources (official council websites):
-//   - Vinaròs:   https://vinaros.es/ca/noticies?page=1
-//   - Benicarló: https://www.ajuntamentdebenicarlo.org/act/pact-notesdepremsa.php
-//   - Peñíscola: https://www.peniscola.org/ver/3/?&pagina_actual=1
+// Castellón city news — scraped via ScrapingAnt (JS rendering required).
+// Source: https://www.castello.es/es/noticies
+// Structure: <li class="three-columns-news__item"> with <a><h3>Title</h3></a> and <p class="...date">DD/MM/YYYY</p>
 
-const SOURCES = [
-  { name: 'Vinaros',   url: 'https://vinaros.es/ca/noticies?page=1', label: 'Ajuntament de Vinaròs', type: 'html' },
-  { name: 'Benicarlo', url: 'https://www.ajuntamentdebenicarlo.org/act/pact-notesdepremsa.php', label: 'Ajuntament de Benicarló', type: 'html' },
-  { name: 'Peniscola', url: 'https://www.peniscola.org/ver/3/?&pagina_actual=1', label: 'Ajuntament de Peníscola', type: 'html' }
-];
+const SCRAPINGANT_API_KEY = process.env.SCRAPINGANT_API_KEY;
+const TARGET_URL = 'https://www.castello.es/es/noticies';
+const BASE = 'https://www.castello.es';
 
 function cleanTitle(raw) {
   return String(raw || '')
-    .replace(/<br\s*\/?>/gi, ' ')
-    .replace(/<\/p>/gi, ' ')
     .replace(/<[^>]+>/g, '')
     .replace(/&amp;/g, '&')
     .replace(/&#8217;/g, '’')
@@ -24,94 +18,75 @@ function cleanTitle(raw) {
     .trim();
 }
 
-function isSuspicious(title) {
-  if (!title) return true;
-  if (title.length < 12) return true;
-  if (title.length > 220) return true;
-  const dates = title.match(/\d{1,2}\s+(?:de\s+)?[a-zA-Z]+\s+\d{4}/g);
-  if (dates && dates.length > 1) return true;
-  return false;
-}
+async function fetchCastellon() {
+  if (!SCRAPINGANT_API_KEY) {
+    throw new Error('No SCRAPINGANT_API_KEY');
+  }
 
-async function fetchSource(source) {
-  const res = await fetch(source.url, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (compatible; ValenciaFiles/1.0; +https://github.com/mrl666/valencia-files)',
-      'Accept': 'text/html,application/xhtml+xml',
-      'Accept-Language': 'ca-ES,es;q=0.9,en;q=0.8'
-    },
-    redirect: 'follow'
+  const params = new URLSearchParams({
+    url: TARGET_URL,
+    browser: 'true',
+    wait_for_selector: '.three-columns-news__item',
+    timeout: '60'
   });
-  if (!res.ok) throw new Error(`${source.name} HTTP ${res.status}`);
-  const html = await res.text();
 
-  const items = [];
-  const seen = new Set();
+  const res = await fetch(`https://api.scrapingant.com/v2/general?${params}`, {
+    headers: { 'x-api-key': SCRAPINGANT_API_KEY }
+  });
 
-  // --- Vinaròs: DD/MM/YYYY followed by headline ---
-  if (source.name === 'Vinaros') {
-    const re = /(\d{2})\/(\d{2})\/(\d{4})[\s\S]{0,300}?<a[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
-    let m;
-    while ((m = re.exec(html)) !== null) {
-      const url = m[4];
-      if (seen.has(url)) continue;
-      const title = cleanTitle(m[5]);
-      if (isSuspicious(title)) continue;
-      const date = `${m[3]}-${m[2]}-${m[1]}`;
-      const id = `vinaros-${url.split('/').filter(Boolean).pop() || url}`;
-      seen.add(url);
-      items.push({ id, title, url: url.startsWith('http') ? url : 'https://vinaros.es' + url, date, town: 'Vinaròs', sourceLabel: source.label });
-    }
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`ScrapingAnt HTTP ${res.status} — ${body.slice(0, 200)}`);
   }
 
-  // --- Benicarló: <h2>Title</h2> ... DD/MM/YYYY ---
-  if (source.name === 'Benicarlo') {
-    const re = /<h2[^>]*>([\s\S]*?)<\/h2>[\s\S]{0,1000}?(\d{2})\/(\d{2})\/(\d{4})/g;
-    let m;
-    while ((m = re.exec(html)) !== null) {
-      const title = cleanTitle(m[1]);
-      if (isSuspicious(title)) continue;
-      const date = `${m[4]}-${m[3]}-${m[2]}`;
-      const id = `benicarlo-${title.slice(0, 30).replace(/\s+/g, '-').toLowerCase()}`;
-      items.push({ id, title, url: source.url, date, town: 'Benicarló', sourceLabel: source.label });
-    }
-  }
-
-  // --- Peñíscola: <h3>Title</h3> ... DD/MM/YYYY ---
-  if (source.name === 'Peniscola') {
-    const re = /<h3[^>]*>([\s\S]*?)<\/h3>[\s\S]{0,1000}?(\d{2})\/(\d{2})\/(\d{4})/g;
-    let m;
-    while ((m = re.exec(html)) !== null) {
-      const title = cleanTitle(m[1]);
-      if (isSuspicious(title)) continue;
-      const date = `${m[4]}-${m[3]}-${m[2]}`;
-      const id = `peniscola-${title.slice(0, 30).replace(/\s+/g, '-').toLowerCase()}`;
-      items.push({ id, title, url: source.url, date, town: 'Peníscola', sourceLabel: source.label });
-    }
-  }
-
-  console.error(`  ${source.name}: ${items.length} items`);
-  return items;
+  return res.text();
 }
 
 async function run() {
   console.error('castellon.js starting…');
-  const all = [];
-  
-  for (const source of SOURCES) {
-    try {
-      const items = await fetchSource(source);
-      all.push(...items);
-    } catch (e) {
-      console.error(`Skipping ${source.name}: ${e.message}`);
-    }
+
+  let html = '';
+  try {
+    html = await fetchCastellon();
+    console.error(`  Rendered HTML: ${html.length} bytes`);
+  } catch (e) {
+    console.error(`  Fetch failed: ${e.message}`);
+    console.log('[]');
+    return;
   }
 
-  all.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  const pool = all.slice(0, 15);
+  const items = [];
+  const seen = new Set();
 
-  console.error(`castellon.js extracted ${pool.length} items total`);
-  console.log(JSON.stringify(pool));
+  const itemRe = /<a[^>]+href="([^"]+)"[^>]*>\s*<h3>([\s\S]*?)<\/h3>\s*<\/a>([\s\S]{0,800}?)<p[^>]*class="[^"]*three-columns-news__item__date[^"]*"[^>]*>\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/g;
+
+  let m;
+  while ((m = itemRe.exec(html)) !== null) {
+    const url = m[1];
+    if (seen.has(url)) continue;
+
+    const title = cleanTitle(m[2]);
+    if (!title || title.length < 12) continue;
+
+    const day = String(m[4]).padStart(2, '0');
+    const month = String(m[5]).padStart(2, '0');
+    const year = m[6];
+    const date = `${year}-${month}-${day}`;
+
+    const id = `castello-${url.split('/').filter(Boolean).pop() || url}`;
+    seen.add(url);
+    items.push({
+      id,
+      title,
+      url: url.startsWith('http') ? url : BASE + url,
+      date,
+      town: 'Castelló',
+      sourceLabel: 'Ajuntament de Castelló'
+    });
+  }
+
+  console.error(`castellon.js extracted ${items.length} items`);
+  console.log(JSON.stringify(items.slice(0, 15)));
 }
 
 run()
