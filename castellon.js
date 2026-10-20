@@ -1,71 +1,35 @@
-// Castellón city news — scraped via ScrapingAnt (JS rendering required).
+// Castellón city news — scrape city council
 // Source: https://www.castello.es/es/noticies
-// Structure: <li class="three-columns-news__item"> with <a><h3>Title</h3></a> and <p class="...date">DD/MM/YYYY</p>
 
-const SCRAPINGANT_API_KEY = process.env.SCRAPINGANT_API_KEY;
-const TARGET_URL = 'https://www.castello.es/es/noticies';
 const BASE = 'https://www.castello.es';
-
-function cleanTitle(raw) {
-  return String(raw || '')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&amp;/g, '&')
-    .replace(/&#8217;/g, '’')
-    .replace(/&#8211;/g, '–')
-    .replace(/&#039;/g, "'")
-    .replace(/&quot;/g, '"')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-async function fetchCastellon() {
-  if (!SCRAPINGANT_API_KEY) {
-    throw new Error('No SCRAPINGANT_API_KEY');
-  }
-
-  const params = new URLSearchParams({
-    url: TARGET_URL,
-    browser: 'true',
-    wait_for_selector: '.three-columns-news__item',
-    timeout: '60'
-  });
-
-  const res = await fetch(`https://api.scrapingant.com/v2/general?${params}`, {
-    headers: { 'x-api-key': SCRAPINGANT_API_KEY }
-  });
-
-  if (!res.ok) {
-    const body = await res.text().catch(() => '');
-    throw new Error(`ScrapingAnt HTTP ${res.status} — ${body.slice(0, 200)}`);
-  }
-
-  return res.text();
-}
+const LIST_URL = 'https://www.castello.es/es/noticies';
 
 async function run() {
   console.error('castellon.js starting…');
 
-  let html = '';
-  try {
-    html = await fetchCastellon();
-    console.error(`  Rendered HTML: ${html.length} bytes`);
-  } catch (e) {
-    console.error(`  Fetch failed: ${e.message}`);
-    console.log('[]');
-    return;
-  }
+  const res = await fetch(LIST_URL, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (compatible; ValenciaFiles/1.0; +https://github.com/mrl666/valencia-files)',
+      'Accept': 'text/html,application/xhtml+xml',
+      'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8'
+    },
+    redirect: 'follow'
+  });
+  if (!res.ok) throw new Error(`Castellón HTTP ${res.status}`);
+  const html = await res.text();
 
   const items = [];
   const seen = new Set();
 
-  const itemRe = /<a[^>]+href="([^"]+)"[^>]*>\s*<h3>([\s\S]*?)<\/h3>\s*<\/a>([\s\S]{0,800}?)<p[^>]*class="[^"]*three-columns-news__item__date[^"]*"[^>]*>\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/g;
+  // Pattern: <a href="..."> <h3>TITLE</h3> </a> ... <p class="...date">DD/MM/YYYY</p>
+  const re = /<a[^>]+href="([^"]+)"[^>]*>\s*<h3>([\s\S]*?)<\/h3>\s*<\/a>([\s\S]{0,800}?)<p[^>]*class="[^"]*three-columns-news__item__date[^"]*"[^>]*>\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/g;
 
   let m;
-  while ((m = itemRe.exec(html)) !== null) {
+  while ((m = re.exec(html)) !== null) {
     const url = m[1];
     if (seen.has(url)) continue;
 
-    const title = cleanTitle(m[2]);
+    const title = m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
     if (!title || title.length < 12) continue;
 
     const day = String(m[4]).padStart(2, '0');
@@ -73,15 +37,13 @@ async function run() {
     const year = m[6];
     const date = `${year}-${month}-${day}`;
 
-    const id = `castello-${url.split('/').filter(Boolean).pop() || url}`;
+    const id = url.split('/').filter(Boolean).pop() || url;
     seen.add(url);
     items.push({
       id,
       title,
       url: url.startsWith('http') ? url : BASE + url,
-      date,
-      town: 'Castelló',
-      sourceLabel: 'Ajuntament de Castelló'
+      date
     });
   }
 
