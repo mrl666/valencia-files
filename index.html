@@ -273,6 +273,36 @@
   @media (min-width:760px){ :root{--max:820px} .wrap{padding-top:28px} }
   @media (max-width:640px){ .topstrip{grid-template-columns:1fr} .sport-grid{grid-template-columns:1fr} }
   @media (max-width:560px){ .service-grid{grid-template-columns:1fr} .tab-nav button{min-width:auto;font-size:10px;padding:8px 6px} }
+
+   .back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 44px;
+    height: 44px;
+    background: var(--accent);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    font-size: 20px;
+  }
+  .back-to-top.show {
+    opacity: 1;
+    visibility: visible;
+  }
+  .back-to-top:hover {
+    background: #8f0e12;
+    text-decoration: none;
+    color: white;
+  }
 </style>
 </head>
 <body>
@@ -785,7 +815,18 @@
     results.forEach(function (r) { if (r) updateCityCard(r); });
   });
 })();
+
+  // Back to Top Logic
+  var backToTopBtn = document.getElementById("backToTop");
+  window.addEventListener("scroll", function() {
+    if (window.scrollY > 400) {
+      backToTopBtn.classList.add("show");
+    } else {
+      backToTopBtn.classList.remove("show");
+    }
+  });
 </script>
-  
+
+<a href="#" class="back-to-top" id="backToTop" aria-label="Go to top">↑</a>  
 </body>
 </html>
