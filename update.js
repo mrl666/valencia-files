@@ -358,32 +358,12 @@ if (adminDeadlines.length > 0) {
 try {
   const games = JSON.parse(fs.readFileSync('games.json', 'utf8'));
   if (Array.isArray(games) && games.length > 0) {
-    // Pick a game based on the current day (changes every 24h)
     const daysSinceEpoch = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
     const game = games[daysSinceEpoch % games.length];
 
-    const gameHtml = `
-      <details style="cursor: pointer; margin-bottom: 4px;">
-        <summary style="font-family: Georgia, serif; font-size: 15px; color: var(--ink);">
-          ${esc(game.question)}
-        </summary>
-        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dotted var(--rule); font-weight: bold; color: var(--accent);">
-          ${esc(game.answer)}
-        </div>
-      </details>
-    `;
+    const gameHtml = `<details style="cursor: pointer; margin-bottom: 4px;"><summary style="font-family: Georgia, serif; font-size: 15px; color: var(--ink);">${esc(game.question)}</summary><div style="margin-top: 8px; padding-top: 8px; border-top: 1px dotted var(--rule); font-weight: bold; color: var(--accent);">${esc(game.answer)}</div></details>`;
     
-    // Inject into the game content container and show the card
-    html = html.replace(
-      /<div id="game-content"[^>]*>[\s\S]*?<\/div>/,
-      `<div id="game-content" style="font-size:15px; line-height:1.5; margin-top:6px;">${gameHtml}</div>`
-    );
-    
-    // Make the card visible
-    html = html.replace(
-      /<div class="strip-card" id="game-block" style="display:none;">/,
-      `<div class="strip-card" id="game-block">`
-    );
+    html = replaceById(html, 'game-content', gameHtml);
   }
 } catch (e) {
   console.error('Game error:', e.message);
@@ -393,31 +373,12 @@ try {
 try {
   const words = JSON.parse(fs.readFileSync('words.json', 'utf8'));
   if (Array.isArray(words) && words.length > 0) {
-    // Pick a word based on the current day
     const daysSinceEpoch = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
-    // Offset by 1 so it doesn't always match the trivia question
     const wordItem = words[(daysSinceEpoch + 1) % words.length]; 
 
-    const wordHtml = `
-      <div style="font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 4px;">
-        ${esc(wordItem.word)}
-      </div>
-      <div style="font-family: Georgia, serif; color: #333;">
-        ${esc(wordItem.meaning)}
-      </div>
-    `;
+    const wordHtml = `<div style="font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 4px;">${esc(wordItem.word)}</div><div style="font-family: Georgia, serif; color: #333;">${esc(wordItem.meaning)}</div>`;
     
-    // Inject into the content container and show the card
-    html = html.replace(
-      /<div id="word-content"[^>]*>[\s\S]*?<\/div>/,
-      `<div id="word-content" style="font-size:15px; line-height:1.5; margin-top:6px;">${wordHtml}</div>`
-    );
-    
-    // Make the card visible
-    html = html.replace(
-      /<div class="strip-card" id="word-block" style="display:none;">/,
-      `<div class="strip-card" id="word-block">`
-    );
+    html = replaceById(html, 'word-content', wordHtml);
   }
 } catch (e) {
   console.error('Word of the Day error:', e.message);
