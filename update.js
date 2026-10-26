@@ -51,13 +51,6 @@ try {
   if (!Array.isArray(usedNews)) usedNews = [];
 } catch (e) { usedNews = []; }
 
-// --- Load Sport ---
-let sportData = [];
-try {
-  sportData = JSON.parse(fs.readFileSync('sport.json', 'utf8'));
-  if (!Array.isArray(sportData)) sportData = [];
-} catch (e) { sportData = []; }
-
 // --- Load quotes + rotation ---
 let thought = null;
 try {
