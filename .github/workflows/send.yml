@@ -48,9 +48,6 @@ jobs:
       - name: Fetch International view
         run: node international.js > international.json || echo '[]' > international.json
 
-      - name: Fetch Sport
-        run: node sport.js > sport.json || echo '[]' > sport.json
-
       - name: Fetch Admin deadlines
         run: node admin.js > admin.json || echo '[]' > admin.json
 
@@ -79,7 +76,7 @@ jobs:
           git config user.name "valencia-files-bot"
           git config user.email "bot@users.noreply.github.com"
           git add index.html archive.html editions/
-          git add used.json used-news.json lead.json translated.json translations-cache.json international.json castellon.json region.json ivace.json sport.json admin.json events.json
+          git add used.json used-news.json lead.json translated.json translations-cache.json international.json castellon.json region.json ivace.json admin.json events.json
           git commit -m "Edition update $(date -u +'%Y-%m-%dT%H:%M')" || echo "No changes"
           git push
 
