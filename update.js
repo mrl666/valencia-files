@@ -270,56 +270,6 @@ if (internationalNews.length > 0) {
   );
 }
 
-// --- Inject Sport ---
-if (sportData.length > 0) {
-const buildCard = (team) => {
-  const monthsShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const formatDate = (iso) => {
-    const m = (iso || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!m) return '';
-    return `${parseInt(m[3], 10)} ${monthsShort[parseInt(m[2], 10) - 1]}`;
-  };
-
-  const rows = team.results.length
-    ? team.results.map(r => {
-        const home = r.home;
-        const [a, b] = r.score.split('-').map(s => s.trim());
-        const homeScore = home ? a : b;
-        const awayScore = home ? b : a;
-        const homeTeam = home ? team.name : r.opponent;
-        const awayTeam = home ? r.opponent : team.name;
-
-        const homeWin = parseInt(homeScore, 10) > parseInt(awayScore, 10);
-        const awayWin = parseInt(awayScore, 10) > parseInt(homeScore, 10);
-        const dateLabel = formatDate(r.date);
-        const ha = home ? 'H' : 'A';
-
-        return `<div class="result">
-          <div class="team ${homeWin ? 'winner' : ''}">${esc(homeTeam)}</div>
-          <div class="score ${homeWin ? 'score-win' : ''}">${esc(homeScore)}</div>
-          <div class="team ${awayWin ? 'winner' : ''}">${esc(awayTeam)}</div>
-          <div class="score ${awayWin ? 'score-win' : ''}">${esc(awayScore)}</div>
-          <div class="meta">${ha} · ${dateLabel}</div>
-        </div>`;
-      }).join('')
-    : '<div class="result"><span>No recent matches</span></div>';
-
-  const seasonNote = team.season && !team.season.startsWith('2026')
-    ? ` <span style="color:var(--muted);font-weight:400;">(${esc(team.season)})</span>`
-    : '';
-
-  const competition = team.id === 'castellon' ? 'Segunda División' : 'La Liga';
-
-  return `<div class="sport-card">
-    <div class="kicker">${esc(team.name)}${seasonNote}</div>
-    <div class="competition">${competition}</div>
-    ${rows}
-  </div>`;
-};
-
-  html = replaceById(html, 'sport-grid', sportData.map(buildCard).join(''));
-}
-
 // --- Inject Admin deadlines ---
 if (adminDeadlines.length > 0) {
   const monthsShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
