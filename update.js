@@ -285,22 +285,30 @@ if (adminDeadlines.length > 0) {
     return `${day} ${month} ${m[1]}`;
   };
 
-  const trimDetail = (s) => {
-    if (!s) return '';
-    // First line only, and cap at 160 chars
-    let line = String(s).split(/\r?\n/)[0].trim();
-    // Strip common AEAT prefixes
-    line = line.replace(/^[-–•\s]+/, '');
-    if (line.length > 160) line = line.slice(0, 157).trimEnd() + '…';
-    return line;
+  // Helper to strip HTML tags and clean up the text
+  const stripHtml = (str) => {
+    if (!str) return '';
+    return str
+      .replace(/<[^>]+>/g, ' ')     // Replace tags with a space
+      .replace(/&nbsp;/g, ' ')      // Replace non-breaking spaces
+      .replace(/&amp;/g, '&')       // Replace ampersands
+      .replace(/\s+/g, ' ')         // Collapse multiple spaces into one
+      .trim();
   };
 
   const htmlList = adminDeadlines.map(item => {
-    const detail = trimDetail(item.detail);
+    const cleanTitle = stripHtml(item.title);
+    
+    // Clean the detail and truncate it to 160 characters
+    let cleanDetail = stripHtml(item.detail);
+    if (cleanDetail.length > 160) {
+      cleanDetail = cleanDetail.slice(0, 157).trimEnd() + '…';
+    }
+
     return `<li>
-      <h3>${esc(item.title)}</h3>
-      ${detail ? `<p>${esc(detail)}</p>` : ''}
-      <span class="src">Deadline: ${esc(formatDate(item.deadline))} · Source: AEAT — Agencia Tributaria</span>
+      <h3>${esc(cleanTitle)}</h3>
+      ${cleanDetail ? `<p>${esc(cleanDetail)}</p>` : ''}
+      <span class="src">Deadline: ${esc(formatDate(item.deadline))} · Source: AEAT</span>
     </li>`;
   }).join('');
 
