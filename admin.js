@@ -63,6 +63,12 @@ async function run() {
 
   const all = [];
 
+  // Keywords that are actually relevant to residents and expats
+  const RELEVANT_KEYWORDS = [
+    'renta', 'irpf', 'iva', 'autónomo', 'autonomo', 
+    'modelo 100', 'modelo 130', 'modelo 303', 'modelo 111'
+  ];
+
   for (const file of ICS_FILES) {
     const text = readIcs(file);
     if (!text) continue;
@@ -75,13 +81,23 @@ async function run() {
       if (isNaN(d)) continue;
       if (d < today || d > horizon) continue;
 
+      // Check if the title or description contains our keywords
+      const summaryLower = (ev.summary || '').toLowerCase();
+      const descLower = (ev.description || '').toLowerCase();
+      
+      const isRelevant = RELEVANT_KEYWORDS.some(kw => 
+        summaryLower.includes(kw) || descLower.includes(kw)
+      );
+
+      if (!isRelevant) continue;
+
       all.push({
         title: ev.summary,
-        detail: stripHtml(ev.description) || '',
+        detail: ev.description || '',
         deadline: ev.date
       });
     }
-  }
+  }}
 
   // Sort by date, take the 5 nearest
   all.sort((a, b) => a.deadline.localeCompare(b.deadline));
