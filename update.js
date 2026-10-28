@@ -220,9 +220,19 @@ if (eventPool.length > 0) {
 
 // --- Inject thought ---
 if (thought) {
+  // If the quote has a translation field (from quotes.json), show it bilingually.
+  // Otherwise, fallback to the standard single-line display.
+  let thoughtHtml = '';
+  
+  if (thought.translation) {
+    thoughtHtml = `“${esc(thought.text)}”<span style="display:block; margin-top:8px; font-size:15px; font-style:normal; color:#444;">${esc(thought.translation)}</span><span class="author" id="thought-author" style="margin-top:6px;">— ${esc(thought.author)}</span>`;
+  } else {
+    thoughtHtml = `“${esc(thought.text)}”<span class="author" id="thought-author">— ${esc(thought.author)}</span>`;
+  }
+
   html = replaceById(html, 'thought-block',
     `<div class="kicker">Thought of the day</div>
-     <p class="thought" id="thought">“${esc(thought.text)}”<span class="author" id="thought-author">— ${esc(thought.author)}</span></p>`
+     <p class="thought" id="thought">${thoughtHtml}</p>`
   );
 }
 
