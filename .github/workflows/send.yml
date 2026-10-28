@@ -47,6 +47,14 @@ jobs:
 
       - name: Fetch International view
         run: node international.js > international.json || echo '[]' > international.json
+        
+      - name: Download AEAT calendars
+        run: |
+          curl -sL "https://www.google.com/calendar/ical/hqp9h5ft4snag42aea96791g28%40group.calendar.google.com/public/basic.ics" -o aeat-declaraciones.ics
+          curl -sL "https://www.google.com/calendar/ical/jaktdfpo1d6frode4enl3of2jk%40group.calendar.google.com/public/basic.ics" -o aeat-cuenta-corriente.ics
+
+      - name: Fetch Admin deadlines
+        run: node admin.js > admin.json || echo '[]' > admin.json
 
       - name: Fetch Admin deadlines
         run: node admin.js > admin.json || echo '[]' > admin.json
