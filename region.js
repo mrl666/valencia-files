@@ -43,8 +43,23 @@ function isSuspicious(title) {
   if (!title) return true;
   if (title.length < 12) return true;
   if (title.length > 220) return true;
+  
+  // Reject titles with multiple dates (concatenation errors)
   const dates = title.match(/\d{1,2}\s+(?:de\s+)?[a-zA-Z]+\s+\d{4}/g);
   if (dates && dates.length > 1) return true;
+
+  // NEW: Reject administrative, legal, or confidential noise
+  const badWords = [
+    'confidencial', 'protegido', 'subasta', 'contrato', 'licitación', 
+    'edicto', 'exposición pública', 'padrón', 'bases de la convocatoria',
+    'ayudas', 'subvención', 'pleno', 'ordenanza', 'aprobación definitiva'
+  ];
+  
+  const lowerTitle = title.toLowerCase();
+  if (badWords.some(word => lowerTitle.includes(word))) {
+    return true;
+  }
+
   return false;
 }
 
