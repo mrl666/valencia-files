@@ -50,9 +50,10 @@ function isSuspicious(title) {
 
   // NEW: Reject administrative, legal, or confidential noise
   const badWords = [
-    'confidencial', 'protegido', 'subasta', 'contrato', 'licitación', 
+    'confidencial', 'protegido', 'protected', 'subasta', 'contrato', 'licitación', 
     'edicto', 'exposición pública', 'padrón', 'bases de la convocatoria',
-    'ayudas', 'subvención', 'pleno', 'ordenanza', 'aprobación definitiva'
+    'ayudas', 'subvención', 'pleno', 'ordenanza', 'aprobación definitiva',
+    'proyecto', 'proy_' // Blocks internal project codes
   ];
   
   const lowerTitle = title.toLowerCase();
