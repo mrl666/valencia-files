@@ -23,8 +23,6 @@ jobs:
         run: node valencia.js > valencia.json || echo '[]' > valencia.json
 
       - name: Fetch GVA lead
-        env:
-          SCRAPINGANT_API_KEY: ${{ secrets.SCRAPINGANT_API_KEY }}
         run: node fetch-lead.js > lead.json || echo '{}' > lead.json
 
       - name: Fetch Alicante news
@@ -55,12 +53,6 @@ jobs:
 
       - name: Fetch Admin deadlines
         run: node admin.js > admin.json || echo '[]' > admin.json
-
-      - name: Fetch Admin deadlines
-        run: node admin.js > admin.json || echo '[]' > admin.json
-
-      - name: Show ivace.json
-        run: cat ivace.json
 
       - name: Translate headlines
         env:
