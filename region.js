@@ -223,6 +223,17 @@ async function run() {
     console.error('  IVACE: no ivace.json found');
   }
 
+  // Merge Transport items
+  try {
+    const transport = JSON.parse(fs.readFileSync('transport.json', 'utf8'));
+    if (Array.isArray(transport)) {
+      all.push(...transport);
+      console.error(`  Transport: ${transport.length} items merged`);
+    }
+  } catch (e) {
+    console.error('  Transport: no transport.json found');
+  }
+
   const cleaned = all.filter(item => {
     if (!item.title) return false;
     if (item.title.length > 250) return false;
