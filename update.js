@@ -175,24 +175,41 @@ if (castellonPool.length >= 1) {
 
 // --- Inject Region stories ---
 if (regionPool.length >= 1) {
-  const shuffled = shuffle(regionPool, seed + 23);
-  
-  // 1. Force one IVACE item if available
-  const ivaceItem = shuffled.find(item => item.sourceLabel && item.sourceLabel.includes('IVACE'));
-  
-  // 2. Filter out IVACE from the rest so we don't duplicate it
-  const otherItems = shuffled.filter(item => !item.sourceLabel || !item.sourceLabel.includes('IVACE'));
-  
-  // 3. Build the final selection: IVACE first (if found), then fill up to 6 items total
+  // 1. Group items by their source (e.g., Torrent, Aspe, IVACE)
+  const itemsBySource = {};
+  regionPool.forEach(item => {
+    const src = item.sourceLabel || 'Unknown';
+    if (!itemsBySource[src]) itemsBySource[src] = [];
+    itemsBySource[src].push(item);
+  });
+
+  // 2. Shuffle the list of sources so we pick from different towns each time
+  const sources = Object.keys(itemsBySource);
+  const shuffledSources = shuffle(sources, seed + 23);
+
   const picks = [];
-  if (ivaceItem) picks.push(ivaceItem);
-  
-  for (const item of otherItems) {
-    if (picks.length >= 6) break; // Increased from 4 to 6
-    picks.push(item);
+  let index = 0;
+
+  // 3. Keep looping through the shuffled sources, picking one item from each,
+  // until we have 6 items.
+  while (picks.length < 6 && index < 100) { // limit to 100 iterations to prevent infinite loops
+    for (const src of shuffledSources) {
+      if (picks.length >= 6) break;
+      
+      const sourceItems = itemsBySource[src];
+      if (sourceItems.length > 0) {
+        // Pick a random item from this source
+        const randomIndex = Math.floor(Math.random() * sourceItems.length);
+        const item = sourceItems.splice(randomIndex, 1)[0]; // Remove it so it doesn't get picked twice
+        picks.push(item);
+      }
+    }
+    index++;
   }
 
-  // 4. Render the HTML
+  // 4. Render the HTML (sorted by date so the newest are at the top)
+  picks.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
   const htmlList = picks.map(item =>
     `<li>
       <h3><a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.title)}</a></h3>
