@@ -20,6 +20,7 @@ const region = loadJson('region.json') || [];
 const international = loadJson('international.json') || [];
 const admin = loadJson('admin.json') || [];
 const events = loadJson('events.json') || [];
+const transport = loadJson('transport.json') || [];
 
 // --- Load translation cache ---
 let cache = {};
@@ -94,6 +95,7 @@ collect(region);
 collect(international);
 collect(admin);
 collect(events);
+collect(transport);
 
 const uniqueHeadlines = Array.from(toTranslate);
 
@@ -165,7 +167,8 @@ async function run() {
     region: region.map(applyTranslation),
     international: international.map(applyTranslation),
     admin: admin.map(applyTranslation),
-    events: events.map(applyTranslation)
+    events: events.map(applyTranslation),
+    transport: transport.map(applyTranslation)
   };
 
   console.log(JSON.stringify(output));
