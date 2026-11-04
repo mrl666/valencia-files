@@ -34,6 +34,9 @@ jobs:
       - name: Fetch IVACE news
         run: node ivace.js > ivace.json || echo '[]' > ivace.json
 
+      - name: Fetch Transport news
+        run: node transport.js > transport.json || echo '[]' > transport.json
+
       - name: Fetch Region news
         run: node region.js > region.json || echo '[]' > region.json
 
