@@ -43,6 +43,9 @@ jobs:
       - name: Fetch Alicante Events
         run: node events-alicante.js > events-alicante.json || echo '[]' > events-alicante.json
 
+      - name: Fetch Castellón Events
+        run: node events-castellon.js > events-castellon.json || echo '[]' > events-castellon.json
+
       - name: Fetch Events
         run: node events.js > events.json || echo '[]' > events.json
 
