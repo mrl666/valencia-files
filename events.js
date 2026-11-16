@@ -99,6 +99,19 @@ async function run() {
   } catch (e) {
     console.error('  No Alicante events to merge');
   }
+
+  // Merge Castellón events if they exist
+  try {
+    const fs = require('fs');
+    const castellonEvents = JSON.parse(fs.readFileSync('events-castellon.json', 'utf8'));
+    if (Array.isArray(castellonEvents)) {
+      items.push(...castellonEvents);
+      console.error(`  Merged ${castellonEvents.length} Castellón events`);
+    }
+  } catch (e) {
+    console.error('  No Castellón events to merge');
+  }
+  
   console.error(`events.js extracted ${items.length} items`);
   console.log(JSON.stringify(items.slice(0, 20)));
 }
