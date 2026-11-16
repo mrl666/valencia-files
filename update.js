@@ -222,16 +222,29 @@ if (regionPool.length >= 1) {
 
 // --- Inject Events ---
 if (eventPool.length > 0) {
-  const picks = shuffle(eventPool, seed + 41).slice(0, 3);
+  const monthsShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const daysShort = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  const formatEventDate = (iso) => {
+    if (!iso) return '';
+    const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return iso;
+    const d = new Date(iso);
+    if (isNaN(d)) return iso;
+    return `${daysShort[d.getDay()]} ${parseInt(m[3], 10)} ${monthsShort[parseInt(m[2], 10) - 1]}`;
+  };
+
+  const picks = shuffle(eventPool, seed + 41).slice(0, 4); // Increased to 4 items
+  
   const htmlList = picks.map(item => {
-    // Fallback to title_original if translation is missing, though it shouldn't be
     const desc = item.description || '';
     return `<li>
       <h3><a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.title)}</a></h3>
-      ${desc ? `<p>${esc(desc.slice(0, 200))}${desc.length > 200 ? '…' : ''}</p>` : ''}
-      <span class="src">${esc(item.date || '')} · Source: Diputació de València — Agenda</span>
+      ${desc ? `<p>${esc(desc.slice(0, 160))}${desc.length > 160 ? '…' : ''}</p>` : ''}
+      <span class="src">${esc(formatEventDate(item.date))} · ${esc(item.sourceLabel || 'Agenda')}</span>
     </li>`;
   }).join('');
+  
   html = replaceById(html, 'events-stories', htmlList);
 }
 
