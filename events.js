@@ -76,6 +76,18 @@ async function run() {
     });
   }
 
+  // Merge Alicante events if they exist
+  try {
+    const fs = require('fs');
+    const alicanteEvents = JSON.parse(fs.readFileSync('events-alicante.json', 'utf8'));
+    if (Array.isArray(alicanteEvents)) {
+      items.push(...alicanteEvents);
+      console.error(`  Merged ${alicanteEvents.length} Alicante events`);
+    }
+  } catch (e) {
+    console.error('  No Alicante events to merge');
+  }
+  
   console.error(`events.js extracted ${items.length} items`);
   console.log(JSON.stringify(items.slice(0, 20)));
 }
