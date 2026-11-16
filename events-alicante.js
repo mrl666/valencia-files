@@ -50,8 +50,8 @@ async function run() {
     const items = [];
     const seen = new Set();
     
-    // Match the event blocks. Usually <a href="...evento...">Title</a>
-    const re = /<a[^>]+href="([^"]*\/evento\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
+// More flexible regex: matches /event/ URLs and captures titles from headings
+const re = /<a[^>]+href="([^"]*\/event\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
     
     let m;
     let count = 0;
