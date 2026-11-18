@@ -48,13 +48,15 @@ function isSuspicious(title) {
   const dates = title.match(/\d{1,2}\s+(?:de\s+)?[a-zA-Z]+\s+\d{4}/g);
   if (dates && dates.length > 1) return true;
 
-  // NEW: Reject administrative, legal, or confidential noise
   const badWords = [
     'confidencial', 'confidential', 'protegido', 'protected', 
     'subasta', 'contrato', 'licitación', 'edicto', 
     'exposición pública', 'padrón', 'bases de la convocatoria',
     'ayudas', 'subvención', 'pleno', 'ordenanza', 'aprobación definitiva',
-    'proyecto', 'proy_', 'ed-pai', 'pai-sector' // Blocks internal project codes
+    'proyecto', 'proy_', 'ed-pai', 'pai-sector',
+    // NEW: Utility cuts and urgent local notices
+    'aviso importante', 'corte de', 'suspensión de', 'suspensio de', 
+    'tall de', 'interrupció', 'interrupcion', 'corte'
   ];
   
   const lowerTitle = title.toLowerCase();
