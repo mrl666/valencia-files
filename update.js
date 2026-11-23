@@ -5,12 +5,8 @@ let html = fs.readFileSync(file, 'utf8');
 
 // --- Load everything from translated.json ---
 let translated = {
-  lead: null,
-  valencia: [],
-  alicante: [],
-  castellon: [],
-  region: [],
-  international: []
+  lead: null, valencia: [], alicante: [], castellon: [],
+  region: [], international: [], admin: [], events: [], transport: []
 };
 try {
   const parsed = JSON.parse(fs.readFileSync('translated.json', 'utf8'));
@@ -23,12 +19,11 @@ try {
       region: Array.isArray(parsed.region) ? parsed.region : [],
       international: Array.isArray(parsed.international) ? parsed.international : [],
       admin: Array.isArray(parsed.admin) ? parsed.admin : [],
-      events: Array.isArray(parsed.events) ? parsed.events : []
+      events: Array.isArray(parsed.events) ? parsed.events : [],
+      transport: Array.isArray(parsed.transport) ? parsed.transport : []
     };
   }
-} catch (e) {
-  // translated.json missing or malformed — keep empty defaults
-}
+} catch (e) {}
 
 const leadNews          = translated.lead;
 const valenciaPool      = translated.valencia;
@@ -36,6 +31,9 @@ const alicantePool      = translated.alicante;
 const castellonPool     = translated.castellon;
 const regionPool        = translated.region;
 const internationalNews = translated.international;
+const adminDeadlines    = translated.admin;
+const eventPool         = translated.events;
+const transportPool     = translated.transport;
 
 // --- Load weather ---
 let weather = null;
@@ -69,12 +67,6 @@ try {
   updated.push({ id: thought.id, at: now });
   fs.writeFileSync('used.json', JSON.stringify(updated, null, 2));
 } catch (e) { console.error('Quote picker error:', e.message); }
-
-// --- Load Admin deadlines ---
-const adminDeadlines = Array.isArray(translated.admin) ? translated.admin : [];
-
-// --- Load turisme.dival.es/agenda ---
-const eventPool = Array.isArray(translated.events) ? translated.events : [];
 
 // --- Helpers ---
 function replaceById(html, id, newInner) {
@@ -110,10 +102,7 @@ function shuffle(arr, seed) {
 }
 
 function esc(s) {
-  return String(s || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 const stamp = new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
@@ -123,12 +112,7 @@ const seed = Math.floor(Date.now() / 3600000);
 if (leadNews && leadNews.image) {
   const imageHtml = `<img id="lead-image" src="${esc(leadNews.image.url)}" alt="" style="width:100%; height:200px; object-fit:cover; display:block; margin-bottom:6px; border:1px solid var(--rule);">
        <div class="image-credit" style="margin-bottom:12px;">${esc(leadNews.image.credit)} — <a href="${esc(leadNews.image.sourceUrl)}" target="_blank" rel="noopener">Source</a></div>`;
-  
-  // Replace the existing image + credit block
-  html = html.replace(
-    /<img id="lead-image"[^>]*>[\s\S]*?<\/div>/,
-    imageHtml
-  );
+  html = html.replace(/<img id="lead-image"[^>]*>[\s\S]*?<\/div>/, imageHtml);
 }
 
 // --- Inject Lead 1 ---
@@ -139,13 +123,15 @@ if (leadNews && leadNews.title) {
   );
 }
 
-// --- Inject Lead 2 (Placeholder logic) ---
-// We will use the first item from a new file 'lead2.json' or fallback.
+// --- Inject Lead 2 ---
 if (leadNews && leadNews.title2) {
   html = replaceById(html, 'lead-story-2',
     `<h2>${esc(leadNews.title2)}</h2>
      <span class="src"><a href="${esc(leadNews.url2)}" target="_blank" rel="noopener">Source: ${esc(leadNews.source2 || 'GVA')} · ${stamp}</a></span>`
   );
+} else {
+  // Hide the second lead if there is no data for it
+  html = replaceById(html, 'lead-story-2', '');
 }
 
 // --- Inject Valencia secondary stories ---
@@ -155,11 +141,10 @@ if (valenciaPool.length >= 3) {
   const secHtml = secondary.map(item =>
     `<li>
       <h3><a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.title)}</a></h3>
-      <span class="src">Source: Ajuntament de València · ${esc(item.date || '')}</span>
+      <span class="src">Source: ${esc(item.sourceLabel || 'Ajuntament de València')} · ${esc(item.date || '')}</span>
     </li>`
   ).join('');
   html = replaceById(html, 'valencia-stories', secHtml);
-
   usedNews = [{ id: secondary[0].id, at: Date.now() }];
   fs.writeFileSync('used-news.json', JSON.stringify(usedNews, null, 2));
 }
@@ -170,7 +155,7 @@ if (alicantePool.length >= 1) {
   const htmlList = picks.map(item =>
     `<li>
       <h3><a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.title)}</a></h3>
-      <span class="src">Source: Ayuntamiento de Alicante · ${esc(item.date || '')}</span>
+      <span class="src">Source: ${esc(item.sourceLabel || 'Ayuntamiento de Alicante')} · ${esc(item.date || '')}</span>
     </li>`
   ).join('');
   html = replaceById(html, 'alicante-stories', htmlList);
@@ -182,7 +167,7 @@ if (castellonPool.length >= 1) {
   const htmlList = picks.map(item =>
     `<li>
       <h3><a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.title)}</a></h3>
-      <span class="src">Source: Ajuntament de Castelló · ${esc(item.date || '')}</span>
+      <span class="src">Source: ${esc(item.sourceLabel || 'Ajuntament de Castelló')} · ${esc(item.date || '')}</span>
     </li>`
   ).join('');
   html = replaceById(html, 'castellon-stories', htmlList);
@@ -190,48 +175,35 @@ if (castellonPool.length >= 1) {
 
 // --- Inject Region stories ---
 if (regionPool.length >= 1) {
-  // 1. Group items by their source (e.g., Torrent, Aspe, IVACE)
   const itemsBySource = {};
   regionPool.forEach(item => {
     const src = item.sourceLabel || 'Unknown';
     if (!itemsBySource[src]) itemsBySource[src] = [];
     itemsBySource[src].push(item);
   });
-
-  // 2. Shuffle the list of sources so we pick from different towns each time
   const sources = Object.keys(itemsBySource);
   const shuffledSources = shuffle(sources, seed + 23);
-
   const picks = [];
   let index = 0;
-
-  // 3. Keep looping through the shuffled sources, picking one item from each,
-  // until we have 6 items.
-  while (picks.length < 6 && index < 100) { // limit to 100 iterations to prevent infinite loops
+  while (picks.length < 6 && index < 100) {
     for (const src of shuffledSources) {
       if (picks.length >= 6) break;
-      
       const sourceItems = itemsBySource[src];
       if (sourceItems.length > 0) {
-        // Pick a random item from this source
         const randomIndex = Math.floor(Math.random() * sourceItems.length);
-        const item = sourceItems.splice(randomIndex, 1)[0]; // Remove it so it doesn't get picked twice
+        const item = sourceItems.splice(randomIndex, 1)[0];
         picks.push(item);
       }
     }
     index++;
   }
-
-  // 4. Render the HTML (sorted by date so the newest are at the top)
   picks.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-
   const htmlList = picks.map(item =>
     `<li>
       <h3><a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.title)}</a></h3>
       <span class="src">Source: ${esc(item.sourceLabel || 'Ajuntament')} · ${esc(item.date || '')}</span>
     </li>`
   ).join('');
-  
   html = replaceById(html, 'region-stories', htmlList);
 }
 
@@ -239,7 +211,6 @@ if (regionPool.length >= 1) {
 if (eventPool.length > 0) {
   const monthsShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const daysShort = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-
   const formatEventDate = (iso) => {
     if (!iso) return '';
     const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -248,9 +219,7 @@ if (eventPool.length > 0) {
     if (isNaN(d)) return iso;
     return `${daysShort[d.getDay()]} ${parseInt(m[3], 10)} ${monthsShort[parseInt(m[2], 10) - 1]}`;
   };
-
-  const picks = shuffle(eventPool, seed + 41).slice(0, 4); // Increased to 4 items
-  
+  const picks = shuffle(eventPool, seed + 41).slice(0, 4);
   const htmlList = picks.map(item => {
     const desc = item.description || '';
     return `<li>
@@ -259,22 +228,17 @@ if (eventPool.length > 0) {
       <span class="src">${esc(formatEventDate(item.date))} · ${esc(item.sourceLabel || 'Agenda')}</span>
     </li>`;
   }).join('');
-  
   html = replaceById(html, 'events-stories', htmlList);
 }
 
 // --- Inject thought ---
 if (thought) {
-  // If the quote has a translation field (from quotes.json), show it bilingually.
-  // Otherwise, fallback to the standard single-line display.
   let thoughtHtml = '';
-  
   if (thought.translation) {
     thoughtHtml = `“${esc(thought.text)}”<span style="display:block; margin-top:8px; font-size:15px; font-style:normal; color:#444;">${esc(thought.translation)}</span><span class="author" id="thought-author" style="margin-top:6px;">— ${esc(thought.author)}</span>`;
   } else {
     thoughtHtml = `“${esc(thought.text)}”<span class="author" id="thought-author">— ${esc(thought.author)}</span>`;
   }
-
   html = replaceById(html, 'thought-block',
     `<div class="kicker">Thought of the day</div>
      <p class="thought" id="thought">${thoughtHtml}</p>`
@@ -293,7 +257,6 @@ if (weather) {
       <div class="weather-forecast">${forecastHtml}</div>
     </div>`;
   };
-
   html = replaceById(html, 'weather-card',
     `<div class="kicker">Weather · València · Alacant · Castelló</div>
      <div class="weather-cities">${weather.map(buildCity).join('')}</div>
@@ -321,7 +284,6 @@ if (internationalNews.length > 0) {
 // --- Inject Admin deadlines ---
 if (adminDeadlines.length > 0) {
   const monthsShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
   const formatDate = (iso) => {
     const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (!m) return iso;
@@ -329,75 +291,26 @@ if (adminDeadlines.length > 0) {
     const month = monthsShort[parseInt(m[2], 10) - 1];
     return `${day} ${month} ${m[1]}`;
   };
-
-  // Helper to strip HTML tags and clean up the text
   const stripHtml = (str) => {
     if (!str) return '';
-    return str
-      .replace(/<[^>]+>/g, ' ')     // Replace tags with a space
-      .replace(/&nbsp;/g, ' ')      // Replace non-breaking spaces
-      .replace(/&amp;/g, '&')       // Replace ampersands
-      .replace(/\s+/g, ' ')         // Collapse multiple spaces into one
-      .trim();
+    return str.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
   };
-
   const htmlList = adminDeadlines.map(item => {
     const cleanTitle = stripHtml(item.title);
-    
-    // Clean the detail and truncate it to 160 characters
     let cleanDetail = stripHtml(item.detail);
-    if (cleanDetail.length > 160) {
-      cleanDetail = cleanDetail.slice(0, 157).trimEnd() + '…';
-    }
-
+    if (cleanDetail.length > 160) cleanDetail = cleanDetail.slice(0, 157).trimEnd() + '…';
     return `<li>
       <h3>${esc(cleanTitle)}</h3>
       ${cleanDetail ? `<p>${esc(cleanDetail)}</p>` : ''}
       <span class="src">Deadline: ${esc(formatDate(item.deadline))} · Source: AEAT</span>
     </li>`;
   }).join('');
-
   html = replaceById(html, 'admin-deadlines', htmlList);
-}
-
-// --- Inject Daily Game ---
-try {
-  const games = JSON.parse(fs.readFileSync('games.json', 'utf8'));
-  if (Array.isArray(games) && games.length > 0) {
-    const daysSinceEpoch = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
-    const game = games[daysSinceEpoch % games.length];
-
-    const gameHtml = `<details style="cursor: pointer; margin-bottom: 4px;"><summary style="font-family: Georgia, serif; font-size: 15px; color: var(--ink);">${esc(game.question)}</summary><div style="margin-top: 8px; padding-top: 8px; border-top: 1px dotted var(--rule); font-weight: bold; color: var(--accent);">${esc(game.answer)}</div></details>`;
-    
-    html = replaceById(html, 'game-content', gameHtml);
-  }
-} catch (e) {
-  console.error('Game error:', e.message);
-}
-
-// --- Inject Word of the Day ---
-try {
-  const words = JSON.parse(fs.readFileSync('words.json', 'utf8'));
-  if (Array.isArray(words) && words.length > 0) {
-    const daysSinceEpoch = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
-    const wordItem = words[(daysSinceEpoch + 1) % words.length]; 
-
-    const wordHtml = `<div style="font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 4px;">${esc(wordItem.word)}</div><div style="font-family: Georgia, serif; color: #333;">${esc(wordItem.meaning)}</div>`;
-    
-    html = replaceById(html, 'word-content', wordHtml);
-  }
-} catch (e) {
-  console.error('Word of the Day error:', e.message);
 }
 
 // --- Edition stamp ---
 html = html.replace(/<span id="edition">[^<]*<\/span>/,
   `<span id="edition">Updated ${stamp}</span>`);
-
-console.error('── DIAGNOSTIC ──');
-console.error('internationalNews.length:', internationalNews.length);
-console.error('internationalNews[0]:', JSON.stringify(internationalNews[0] || null).slice(0, 200));
-console.error('block in HTML:', html.indexOf('id="international-view"') > -1);
 
 fs.writeFileSync(file, html);
 console.log('Updated index.html at', stamp);
