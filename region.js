@@ -56,7 +56,8 @@ function isSuspicious(title) {
     'proyecto', 'proy_', 'ed-pai', 'pai-sector',
     // NEW: Utility cuts and urgent local notices
     'aviso importante', 'corte de', 'suspensión de', 'suspensio de', 
-    'tall de', 'interrupció', 'interrupcion', 'corte'
+    'tall de', 'interrupció', 'interrupcion', 'corte', 'AVISO IMPORTANTE',
+    'AVISO', 'IMPORTANTE', 'Corte'
   ];
   
   const lowerTitle = title.toLowerCase();
