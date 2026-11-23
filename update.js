@@ -119,17 +119,32 @@ function esc(s) {
 const stamp = new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
 const seed = Math.floor(Date.now() / 3600000);
 
-// --- Inject GVA Lead ---
-if (leadNews && leadNews.title) {
-  const imageHtml = leadNews.image
-    ? `<img id="lead-image" src="${esc(leadNews.image.url)}" alt="" style="width:100%; height:200px; object-fit:cover; display:block; margin-bottom:6px; border:1px solid var(--rule);">
-       <div class="image-credit" style="margin-bottom:12px;">${esc(leadNews.image.credit)} — <a href="${esc(leadNews.image.sourceUrl)}" target="_blank" rel="noopener">Source</a></div>`
-    : '';
+// --- Inject Lead Image ---
+if (leadNews && leadNews.image) {
+  const imageHtml = `<img id="lead-image" src="${esc(leadNews.image.url)}" alt="" style="width:100%; height:200px; object-fit:cover; display:block; margin-bottom:6px; border:1px solid var(--rule);">
+       <div class="image-credit" style="margin-bottom:12px;">${esc(leadNews.image.credit)} — <a href="${esc(leadNews.image.sourceUrl)}" target="_blank" rel="noopener">Source</a></div>`;
+  
+  // Replace the existing image + credit block
+  html = html.replace(
+    /<img id="lead-image"[^>]*>[\s\S]*?<\/div>/,
+    imageHtml
+  );
+}
 
-  html = replaceById(html, 'lead-story',
-    `${imageHtml}
-     <h2>${esc(leadNews.title)}</h2>
-     <span class="src"><a href="${esc(leadNews.url)}" target="_blank" rel="noopener">Source: ${esc(leadNews.source || 'Generalitat Valenciana')} · ${stamp}</a></span>`
+// --- Inject Lead 1 ---
+if (leadNews && leadNews.title) {
+  html = replaceById(html, 'lead-story-1',
+    `<h2>${esc(leadNews.title)}</h2>
+     <span class="src"><a href="${esc(leadNews.url)}" target="_blank" rel="noopener">Source: ${esc(leadNews.source || 'GVA')} · ${stamp}</a></span>`
+  );
+}
+
+// --- Inject Lead 2 (Placeholder logic) ---
+// We will use the first item from a new file 'lead2.json' or fallback.
+if (leadNews && leadNews.title2) {
+  html = replaceById(html, 'lead-story-2',
+    `<h2>${esc(leadNews.title2)}</h2>
+     <span class="src"><a href="${esc(leadNews.url2)}" target="_blank" rel="noopener">Source: ${esc(leadNews.source2 || 'GVA')} · ${stamp}</a></span>`
   );
 }
 
