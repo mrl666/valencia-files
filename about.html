@@ -63,6 +63,16 @@
   ul{padding-left:20px; margin:0 0 14px}
   li{margin-bottom:6px}
 
+  .ai-notice {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    padding: 12px 16px;
+    margin: 16px 0;
+    font-size: 14px;
+    color: #333;
+  }
+
   footer{
     margin-top:40px;padding-top:14px;border-top:3px double var(--ink);
     font-family:Helvetica,Arial,sans-serif; font-size:11px;
@@ -117,7 +127,12 @@
 
   <h2>How it's made</h2>
   <p>Valencia Files is produced by an automated pipeline that runs three times a day. It collects content from official sources — city councils, the Generalitat Valenciana, the AEAT, AEMET, and public-sector feeds — translates the headlines into English, and publishes the edition as a single page plus a PDF archive copy.</p>
-  <p>The pipeline runs without human intervention. When a source changes or becomes unreachable, the affected section falls back to the last known good version rather than breaking the edition.</p>
+  
+  <div class="ai-notice">
+    <b>AI Disclosure:</b> This page is generated with the assistance of AI tools and is supervised by human editors. We use AI to help summarize facts, translate headlines, and organize the layout, ensuring that the news is presented accurately while respecting copyright and source attribution.
+  </div>
+
+  <p>The pipeline runs without human intervention for data collection. When a source changes or becomes unreachable, the affected section falls back to the last known good version rather than breaking the edition.</p>
 
   <h2>Sources and attribution</h2>
   <p>All content is drawn from official public-sector sources and reused under Spain's <b>Law 37/2007</b> on the reuse of public sector information. Every item on the page cites its original source. Photographs used on the site are individually licensed for reuse and credited where required.</p>
