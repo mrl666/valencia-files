@@ -73,6 +73,10 @@ function collect(items) {
       item.title = decodeHtmlEntities(item.title);
       if (!cache[item.title]) toTranslate.add(item.title);
     }
+    if (item.title2) {
+      item.title2 = decodeHtmlEntities(item.title2);
+      if (!cache[item.title2]) toTranslate.add(item.title2);
+    }
     if (item.detail) {
       item.detail = decodeHtmlEntities(item.detail);
       if (!cache[item.detail]) toTranslate.add(item.detail);
@@ -130,13 +134,17 @@ async function translateBatch(texts) {
   return out;
 }
 
-// --- Apply translations ---
 function applyTranslation(item) {
   if (!item) return item;
   const out = { ...item };
+  
   if (item.title && cache[item.title]) {
     out.title = cache[item.title];
     out.title_original = item.title;
+  }
+  if (item.title2 && cache[item.title2]) {
+    out.title2 = cache[item.title2];
+    out.title2_original = item.title2;
   }
   if (item.detail && cache[item.detail]) {
     out.detail = cache[item.detail];
@@ -146,6 +154,7 @@ function applyTranslation(item) {
     out.description = cache[item.description];
     out.description_original = item.description;
   }
+  
   return out;
 }
 
