@@ -88,9 +88,15 @@ function collect(items) {
   });
 }
 
-if (lead && lead.title) {
-  lead.title = decodeHtmlEntities(lead.title);
-  if (!cache[lead.title]) toTranslate.add(lead.title);
+if (lead) {
+  if (lead.title) {
+    lead.title = decodeHtmlEntities(lead.title);
+    if (!cache[lead.title]) toTranslate.add(lead.title);
+  }
+  if (lead.title2) {
+    lead.title2 = decodeHtmlEntities(lead.title2);
+    if (!cache[lead.title2]) toTranslate.add(lead.title2);
+  }
 }
 collect(valencia);
 collect(alicante);
@@ -134,6 +140,7 @@ async function translateBatch(texts) {
   return out;
 }
 
+// --- Apply translations ---
 function applyTranslation(item) {
   if (!item) return item;
   const out = { ...item };
