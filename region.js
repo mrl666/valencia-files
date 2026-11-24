@@ -1,7 +1,7 @@
 // Region scraper — combines multiple town RSS feeds and HTML news pages into one pool.
 // Sources (all official council websites, reusable under Law 37/2007):
 //   - Aspe, Torrent, Alzira, Novelda (RSS)
-//   - Sagunt, Xàtiva, Vinaròs, Benicarló, Peníscola (HTML)
+//   - Onda, Xàtiva, Vinaròs, Benicarló, Peníscola (HTML)
 //   - IVACE (merged from ivace.json)
 
 const fs = require('fs');
@@ -11,7 +11,7 @@ const SOURCES = [
   { name: 'Torrent',   url: 'https://www.torrent.es/feed/',          label: 'Ajuntament de Torrent',  type: 'rss'  },
   { name: 'Alzira',    url: 'https://www.alzira.es/feed/',           label: 'Ajuntament d\'Alzira',   type: 'rss'  },
   { name: 'Novelda',   url: 'https://www.novelda.es/feed/',          label: 'Ajuntament de Novelda',  type: 'rss'  },
-  { name: 'Sagunt',    url: 'https://aytosagunto.es/va/actualitat/', label: 'Ajuntament de Sagunt',   type: 'html' },
+  { name: 'Onda',    url: 'https://www.onda.es/ond/news/events.php?AllEvents=1', label: 'Ajuntament de Onda',   type: 'html' },
   { name: 'Xativa',    url: 'https://www.xativa.es/es/noticias',     label: 'Ajuntament de Xàtiva',   type: 'html' },
   { name: 'Vinaros',   url: 'https://vinaros.es/ca/noticies?page=1', label: 'Ajuntament de Vinaròs',  type: 'html' },
   { name: 'Benicarlo', url: 'https://www.ajuntamentdebenicarlo.org/act/pact-notesdepremsa.php', label: 'Ajuntament de Benicarló', type: 'html' },
@@ -84,8 +84,8 @@ async function fetchHtmlSource(source) {
   const items = [];
   const seen = new Set();
 
-  // --- Sagunt ---
-  if (source.name === 'Sagunt') {
+  // --- Onda ---
+  if (source.name === 'Onda') {
     const re = /<h3[^>]*class="h5"[^>]*>\s*<a[^>]+href="(\/[^"]*\/actualitat\/[^"]+)"[^>]*>([\s\S]*?)<\/a>\s*<\/h3>[\s\S]{0,500}?<div[^>]*class="box__meta"[^>]*>\s*(\d{1,2})\s+de\s+([a-zàéíóúç]+)\s+(\d{4})/gi;
     let m;
     while ((m = re.exec(html)) !== null) {
@@ -98,9 +98,9 @@ async function fetchHtmlSource(source) {
       const year = m[5];
       if (!month) continue;
       const date = `${year}-${month}-${day}`;
-      const id = `sagunt-${url.split('/').filter(Boolean).pop()}`;
+      const id = `onda-${url.split('/').filter(Boolean).pop()}`;
       seen.add(url);
-      items.push({ id, title, url: 'https://aytosagunto.es' + url, date, town: 'Sagunt', sourceLabel: source.label });
+      items.push({ id, title, url: 'https://www.onda.es' + url, date, town: 'Onda', sourceLabel: source.label });
     }
   }
 
